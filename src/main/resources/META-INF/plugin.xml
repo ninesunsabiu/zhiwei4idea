@@ -1,0 +1,20 @@
+<idea-plugin>
+    <id>cn.eziolin.zhiwei4idea</id>
+    <name>zhiwei4idea</name>
+    <vendor email="ninesuns.lin@outlook.com" url="https://github.com/ninesunsabiu">Ezio Lin</vendor>
+
+    <!--suppress PluginXmlValidity -->
+    <description><![CDATA[
+    <h1>zhiwei utils for idea</h1>
+    ]]></description>
+
+    <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
+         on how to target different products -->
+    <depends>com.intellij.modules.platform</depends>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <!-- Add your extensions here -->
+        <completion.contributor implementationClass="cn.eziolin.zhiwei4idea.VuCodeCompletionContributor"/>
+    </extensions>
+
+</idea-plugin>
