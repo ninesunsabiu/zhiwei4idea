@@ -1,6 +1,6 @@
 <idea-plugin>
     <id>cn.eziolin.zhiwei4idea</id>
-    <name>zhiwei4idea</name>
+    <name>Zhiwei4Idea</name>
     <vendor email="ninesuns.lin@outlook.com" url="https://github.com/ninesunsabiu">Ezio Lin</vendor>
 
     <!--suppress PluginXmlValidity -->
@@ -11,10 +11,12 @@
     <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
          on how to target different products -->
     <depends>com.intellij.modules.platform</depends>
+    <depends>Git4Idea</depends>
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
-        <completion.contributor implementationClass="cn.eziolin.zhiwei4idea.VuCodeCompletionContributor"/>
+        <completion.contributor language="TEXT" order="first, before commitCompletion" implementationClass="cn.eziolin.zhiwei4idea.VuCodeCompletionContributor"/>
+        <vcsCheckinHandlerFactory implementation="cn.eziolin.zhiwei4idea.CompletionCheckinHandlerFactory"/>
     </extensions>
 
 </idea-plugin>
