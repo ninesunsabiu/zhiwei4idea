@@ -9,15 +9,11 @@ import org.jetbrains.annotations.NotNull;
 
 public class VuCodeCompletionProvider extends CompletionProvider<CompletionParameters> {
 
-    private Project getProject(CompletionParameters parameters) {
-        return parameters.getPosition().getProject();
-    }
-
     @Override
     protected void addCompletions(@NotNull CompletionParameters parameters,
                                   @NotNull ProcessingContext context,
                                   @NotNull CompletionResultSet result) {
-        if (CheckinProjectPanelHolder.getInstance().isCommitUiActive()) {
+        if (!CheckinProjectPanelHolder.getInstance().getAffectedFiles().isEmpty()) {
             System.out.println("Congratulations it works!");
         }
     }
