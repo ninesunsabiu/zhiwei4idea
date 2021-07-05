@@ -16,8 +16,9 @@ public class CompletionCheckinHandlerFactory extends VcsCheckinHandlerFactory {
     @NotNull
     @Override
     protected CheckinHandler createVcsHandler(@NotNull CheckinProjectPanel panel, @NotNull CommitContext commitContext) {
+        var project = panel.getProject();
         // hack the panel
-        CheckinProjectPanelHolder.getInstance().setPanel(panel);
+        project.getService(CompletionService.class).setCheckinProjectPanel(panel);
         return new CompletionCheckinHandler();
     }
 }

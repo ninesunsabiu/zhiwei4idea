@@ -3,7 +3,6 @@ package cn.eziolin.zhiwei4idea;
 import cn.eziolin.zhiwei4idea.model.BaseResponse;
 import cn.eziolin.zhiwei4idea.model.Card;
 import com.intellij.codeInsight.completion.*;
-import com.intellij.codeInsight.lookup.LookupElement;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.util.ProcessingContext;
@@ -28,7 +27,8 @@ public class VuCodeCompletionProvider extends CompletionProvider<CompletionParam
     protected void addCompletions(@NotNull CompletionParameters parameters,
                                   @NotNull ProcessingContext context,
                                   @NotNull CompletionResultSet result) {
-        if (!CheckinProjectPanelHolder.getInstance().getAffectedFiles().isEmpty()) {
+        var project = parameters.getPosition().getProject();
+        if (!project.getService(CompletionService.class).getAffectedFiles().isEmpty()) {
             String beforeInput = getBeforeInputString(parameters);
             addCards(beforeInput, result);
         }

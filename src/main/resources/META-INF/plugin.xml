@@ -17,6 +17,7 @@
         <!-- Add your extensions here -->
         <completion.contributor language="TEXT" order="first, before commitCompletion" implementationClass="cn.eziolin.zhiwei4idea.VuCodeCompletionContributor"/>
         <vcsCheckinHandlerFactory implementation="cn.eziolin.zhiwei4idea.CompletionCheckinHandlerFactory"/>
+        <projectService serviceInterface="cn.eziolin.zhiwei4idea.CompletionService" serviceImplementation="cn.eziolin.zhiwei4idea.CompletionServiceImpl"/>
     </extensions>
 
 </idea-plugin>
