@@ -1,9 +1,10 @@
 package cn.eziolin.zhiwei4idea;
 
 import cn.eziolin.zhiwei4idea.model.BaseResponse;
-import cn.eziolin.zhiwei4idea.model.Card;
 import com.intellij.codeInsight.completion.*;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
+import com.intellij.openapi.application.ex.ApplicationUtil;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.util.TextRange;
 import com.intellij.util.ProcessingContext;
 import org.jetbrains.annotations.NotNull;
@@ -12,8 +13,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.Collections;
-import java.util.List;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -45,8 +44,13 @@ public class VuCodeCompletionProvider extends CompletionProvider<CompletionParam
         var matcher = pattern.matcher(beforeInput);
         if (matcher.find()) {
             var searchKeyword = matcher.group(1);
-            var cards = searchCards(searchKeyword);
-            var completions = cards.stream()
+            var cardsResponse = searchCards(searchKeyword);
+
+            if (cardsResponse == null) {
+                return;
+            }
+
+            var completions = cardsResponse.body().get().resultValue.caches.stream()
                     .map((
                             card -> LookupElementBuilder
                                 .create("#" + card.code)
@@ -66,7 +70,7 @@ public class VuCodeCompletionProvider extends CompletionProvider<CompletionParam
         }
     }
 
-    private List<Card> searchCards(String search) {
+    private HttpResponse<Supplier<BaseResponse>> searchCards(String search) {
         String payload = String.format(
                 "{" +
                         "\"filter\":[" +
@@ -103,12 +107,15 @@ public class VuCodeCompletionProvider extends CompletionProvider<CompletionParam
                 .POST(HttpRequest.BodyPublishers.ofString(payload))
                 .build();
         try {
-            HttpResponse<Supplier<BaseResponse>> response =
-                    client.send(request, new JsonBodyHandler<>(BaseResponse.class));
-            return response.body().get().resultValue.caches;
+            var response =
+                    client.sendAsync(request, new JsonBodyHandler<>(BaseResponse.class));
+            return ApplicationUtil.runWithCheckCanceled(
+                    response,
+                    ProgressManager.getInstance().getProgressIndicator()
+            );
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return Collections.emptyList();
+        return null;
     }
 }
