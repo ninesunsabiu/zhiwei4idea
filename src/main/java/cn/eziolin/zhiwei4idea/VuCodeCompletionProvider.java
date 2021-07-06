@@ -27,10 +27,14 @@ public class VuCodeCompletionProvider extends CompletionProvider<CompletionParam
                                   @NotNull ProcessingContext context,
                                   @NotNull CompletionResultSet result) {
         var project = parameters.getPosition().getProject();
-        if (!project.getService(CompletionService.class).getAffectedFiles().isEmpty()) {
-            String beforeInput = getBeforeInputString(parameters);
-            addCards(beforeInput, result);
-        }
+        ConfigSettingsState.getInstance().getPluginConfig().ifPresent(
+                pluginConfig -> {
+                    if (!project.getService(CompletionService.class).getAffectedFiles().isEmpty()) {
+                        String beforeInput = getBeforeInputString(parameters);
+                        addCards(beforeInput, result);
+                    }
+                }
+        );
     }
 
     private String getBeforeInputString(@NotNull CompletionParameters parameters) {
