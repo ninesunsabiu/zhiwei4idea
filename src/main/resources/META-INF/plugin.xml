@@ -18,6 +18,12 @@
         <completion.contributor language="TEXT" order="first, before commitCompletion" implementationClass="cn.eziolin.zhiwei4idea.VuCodeCompletionContributor"/>
         <vcsCheckinHandlerFactory implementation="cn.eziolin.zhiwei4idea.CompletionCheckinHandlerFactory"/>
         <projectService serviceInterface="cn.eziolin.zhiwei4idea.CompletionService" serviceImplementation="cn.eziolin.zhiwei4idea.CompletionServiceImpl"/>
+        <applicationService serviceImplementation="cn.eziolin.zhiwei4idea.ConfigSettingsState" />
+        <applicationConfigurable
+                id="cn.eziolin.zhiwei4idea.PluginSettingsConfigurable"
+                parentId="project.propVCSSupport.Mappings"
+                instance="cn.eziolin.zhiwei4idea.PluginSettingsConfigurable"
+        />
     </extensions>
 
 </idea-plugin>
