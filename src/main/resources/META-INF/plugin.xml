@@ -15,14 +15,14 @@
 
     <extensions defaultExtensionNs="com.intellij">
         <!-- Add your extensions here -->
-        <completion.contributor language="TEXT" order="first, before commitCompletion" implementationClass="cn.eziolin.zhiwei4idea.VuCodeCompletionContributor"/>
-        <vcsCheckinHandlerFactory implementation="cn.eziolin.zhiwei4idea.CompletionCheckinHandlerFactory"/>
-        <projectService serviceInterface="cn.eziolin.zhiwei4idea.CompletionService" serviceImplementation="cn.eziolin.zhiwei4idea.CompletionServiceImpl"/>
-        <applicationService serviceImplementation="cn.eziolin.zhiwei4idea.ConfigSettingsState" />
+        <completion.contributor language="TEXT" order="first, before commitCompletion" implementationClass="cn.eziolin.zhiwei4idea.idea.VuCodeCompletionContributor"/>
+        <vcsCheckinHandlerFactory implementation="cn.eziolin.zhiwei4idea.idea.CompletionCheckinHandlerFactory"/>
+        <projectService serviceInterface="cn.eziolin.zhiwei4idea.idea.service.CompletionService" serviceImplementation="cn.eziolin.zhiwei4idea.idea.service.CompletionServiceImpl"/>
+        <applicationService serviceImplementation="cn.eziolin.zhiwei4idea.idea.service.ConfigSettingsState" />
         <applicationConfigurable
-                id="cn.eziolin.zhiwei4idea.PluginSettingsConfigurable"
+                id="cn.eziolin.zhiwei4idea.idea.PluginSettingsConfigurable"
                 parentId="project.propVCSSupport.Mappings"
-                instance="cn.eziolin.zhiwei4idea.PluginSettingsConfigurable"
+                instance="cn.eziolin.zhiwei4idea.idea.PluginSettingsConfigurable"
         />
     </extensions>
 

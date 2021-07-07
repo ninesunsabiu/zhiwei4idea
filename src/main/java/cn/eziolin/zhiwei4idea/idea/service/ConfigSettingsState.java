@@ -1,4 +1,4 @@
-package cn.eziolin.zhiwei4idea;
+package cn.eziolin.zhiwei4idea.idea.service;
 
 import cn.eziolin.zhiwei4idea.model.PluginConfig;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -15,7 +15,7 @@ import java.io.File;
 import java.util.Optional;
 
 @State(
-        name = "cn.eziolin.zhiwei4idea.ConfigSettingsState",
+        name = "cn.eziolin.zhiwei4idea.idea.service.ConfigSettingsState",
         storages = {@Storage("zhiwei_for_idea.xml")}
 )
 public class ConfigSettingsState implements PersistentStateComponent<ConfigSettingsState> {

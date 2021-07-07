@@ -1,5 +1,6 @@
-package cn.eziolin.zhiwei4idea;
+package cn.eziolin.zhiwei4idea.idea;
 
+import cn.eziolin.zhiwei4idea.VuCodeCompletionProviderDelegate;
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.patterns.PlatformPatterns;
@@ -10,7 +11,7 @@ public class VuCodeCompletionContributor extends CompletionContributor {
         extend(
                 CompletionType.BASIC,
                 PlatformPatterns.psiElement(PlainTextTokenTypes.PLAIN_TEXT),
-                new VuCodeCompletionProvider()
+                new VuCodeCompletionProvider(new VuCodeCompletionProviderDelegate())
         );
     }
 }

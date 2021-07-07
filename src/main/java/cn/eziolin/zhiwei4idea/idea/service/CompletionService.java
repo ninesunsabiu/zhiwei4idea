@@ -1,4 +1,4 @@
-package cn.eziolin.zhiwei4idea;
+package cn.eziolin.zhiwei4idea.idea.service;
 
 import com.intellij.openapi.vcs.CheckinProjectPanel;
 

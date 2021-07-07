@@ -1,5 +1,7 @@
-package cn.eziolin.zhiwei4idea;
+package cn.eziolin.zhiwei4idea.idea;
 
+import cn.eziolin.zhiwei4idea.ConfigSettingsUiComponent;
+import cn.eziolin.zhiwei4idea.idea.service.ConfigSettingsState;
 import com.intellij.openapi.options.Configurable;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;

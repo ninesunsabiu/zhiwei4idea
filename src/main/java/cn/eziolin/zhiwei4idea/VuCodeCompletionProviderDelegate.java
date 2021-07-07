@@ -8,48 +8,41 @@ import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.openapi.application.ex.ApplicationUtil;
 import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.util.TextRange;
-import com.intellij.util.ProcessingContext;
-import org.jetbrains.annotations.NotNull;
 
 import java.net.http.HttpResponse;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-public class VuCodeCompletionProvider extends CompletionProvider<CompletionParameters> {
+public class VuCodeCompletionProviderDelegate implements Function<CompletionParameters, Optional<List<LookupElementBuilder>>> {
 
     private static final String prefix = "card::";
     private static final Pattern pattern = Pattern.compile(prefix + "([\\S]+)$");
 
+
     @Override
-    protected void addCompletions(@NotNull CompletionParameters parameters,
-                                  @NotNull ProcessingContext context,
-                                  @NotNull CompletionResultSet result) {
-        var project = parameters.getPosition().getProject();
-        ConfigSettingsState.getInstance().getPluginConfig().ifPresent(
-                pluginConfig -> {
-                    if (!project.getService(CompletionService.class).getAffectedFiles().isEmpty()) {
-                        String beforeInput = getBeforeInputString(parameters);
-                        addCards(beforeInput, result);
-                    }
-                }
-        );
+    public Optional<List<LookupElementBuilder>> apply(CompletionParameters parameters) {
+        return getBeforeInputString(parameters).flatMap(this::getCards);
     }
 
-    private String getBeforeInputString(@NotNull CompletionParameters parameters) {
+    private Optional<String> getBeforeInputString(CompletionParameters parameters) {
         var position = parameters.getPosition();
         int offsetInFile = parameters.getOffset();
-        return position.getText().substring(0, offsetInFile);
+        var startAndEnd = position.getText().substring(0, offsetInFile);
+        var matcher = pattern.matcher(startAndEnd);
+        if (matcher.find()) {
+            return Optional.ofNullable(matcher.group(1));
+        }
+        return Optional.empty();
     }
 
 
-    private void addCards(String beforeInput, CompletionResultSet result) {
-        var matcher = pattern.matcher(beforeInput);
-        if (matcher.find()) {
-            var searchKeyword = matcher.group(1);
-            searchCards(searchKeyword)
+    private Optional<List<LookupElementBuilder>> getCards(String searchKeyword) {
+            return searchCards(searchKeyword)
             .map(
                 (it) -> it.body().get()
             ).map(
@@ -67,8 +60,7 @@ public class VuCodeCompletionProvider extends CompletionProvider<CompletionParam
                                             document.replaceString(prefixIndex, tailOffset, lookupString);
                                         }))
                         )).collect(Collectors.toList())
-            ).ifPresent(result::addAllElements);
-        }
+            );
     }
 
     private Optional<HttpResponse<Supplier<BaseResponse<ViewMeta>>>> searchCards(String keyword) {
