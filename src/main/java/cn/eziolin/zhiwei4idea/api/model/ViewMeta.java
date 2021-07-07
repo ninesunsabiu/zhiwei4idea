@@ -1,4 +1,4 @@
-package cn.eziolin.zhiwei4idea.model;
+package cn.eziolin.zhiwei4idea.api.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
