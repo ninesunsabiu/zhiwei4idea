@@ -39,7 +39,12 @@ public class ConfigSettingsState implements PersistentStateComponent<ConfigSetti
                 (it) -> {
                     String path = it.replaceAll("^~", System.getProperty("user.home"));
                     try {
-                        pluginConfig = mapper.readValue(new File(path), PluginConfig.class);
+                        File configYaml = new File(path);
+                        // create config file if not exist
+                        var created = configYaml.createNewFile();
+                        if (!created) {
+                            pluginConfig = mapper.readValue(new File(path), PluginConfig.class);
+                        }
                     } catch (Exception e) {
                         pluginConfig = null;
                     }
