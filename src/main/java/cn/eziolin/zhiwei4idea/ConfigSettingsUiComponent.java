@@ -9,6 +9,7 @@ import javax.swing.*;
 public class ConfigSettingsUiComponent {
     private final JPanel myMainPanel;
     private final JBTextField myConfigPathText = new JBTextField();
+    private final JBTextField myDomainText = new JBTextField();
 
     public ConfigSettingsUiComponent() {
         myMainPanel = FormBuilder.createFormBuilder()
@@ -18,7 +19,14 @@ public class ConfigSettingsUiComponent {
                         1,
                         false
                 )
-                .addComponentFillVertically(new JPanel(), 0).getPanel();
+                .addLabeledComponent(
+                        new JLabel("host url"),
+                        myDomainText,
+                        1,
+                        false
+                )
+                .addComponentFillVertically(new JPanel(), 0)
+                .getPanel();
     }
 
     public JComponent getMainPanel() {
@@ -36,5 +44,14 @@ public class ConfigSettingsUiComponent {
 
     public void setConfigPath(@NotNull String newText) {
         myConfigPathText.setText(newText);
+    }
+
+    @NotNull
+    public String getDomainText() {
+        return myDomainText.getText();
+    }
+
+    public void setDomainText(@NotNull String newDomain) {
+        myDomainText.setText(newDomain);
     }
 }

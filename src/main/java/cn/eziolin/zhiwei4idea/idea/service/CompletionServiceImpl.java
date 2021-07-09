@@ -1,19 +1,36 @@
 package cn.eziolin.zhiwei4idea.idea.service;
 
+import cn.eziolin.zhiwei4idea.api.ZhiweiApi;
 import com.intellij.openapi.Disposable;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.vcs.CheckinProjectPanel;
+import com.intellij.ui.AncestorListenerAdapter;
 import com.intellij.ui.EditorTextComponent;
 
+import javax.swing.event.AncestorEvent;
 import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 
 public class CompletionServiceImpl implements CompletionService, Disposable {
     private WeakReference<CheckinProjectPanel> panelRef;
 
+    private final AncestorListenerAdapter whenCheckinPanelShownChange = new AncestorListenerAdapter() {
+        @Override
+        public void ancestorAdded(AncestorEvent event) {
+            ApplicationManager.getApplication().executeOnPooledThread(
+                    () -> ZhiweiApi.getCookieStr().ifPresent(
+                            it -> ConfigSettingsState.getInstance().saveCookie(it)
+                    )
+            );
+        }
+    };
+
     @Override
     public void setCheckinProjectPanel(CheckinProjectPanel panel) {
+        panel.getPreferredFocusedComponent().addAncestorListener(whenCheckinPanelShownChange);
         panelRef = new WeakReference<>(panel);
     }
 
@@ -38,6 +55,9 @@ public class CompletionServiceImpl implements CompletionService, Disposable {
 
     @Override
     public void dispose() {
+        Optional.ofNullable(panelRef.get()).ifPresent(
+                it -> it.getPreferredFocusedComponent().removeAncestorListener(whenCheckinPanelShownChange)
+        );
         panelRef = null;
     }
 }

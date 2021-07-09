@@ -19,8 +19,29 @@ import java.util.Optional;
         storages = {@Storage("zhiwei_for_idea.xml")}
 )
 public class ConfigSettingsState implements PersistentStateComponent<ConfigSettingsState> {
-    public String configFilePath;
+    private String configFilePath;
+    private String domain;
     private PluginConfig pluginConfig;
+
+    private static Optional<PluginConfig> loadPluginConfigWhenPathChange(String configFilePath) {
+        return Optional.ofNullable(configFilePath).map(
+                (it) -> {
+                    String path = it.replaceAll("^~", System.getProperty("user.home"));
+                    try {
+                        File configYaml = new File(path);
+                        // create config file if not exist
+                        var created = configYaml.createNewFile();
+                        if (!created) {
+                            ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+                            return mapper.readValue(new File(path), PluginConfig.class);
+                        }
+                        return null;
+                    } catch (Exception e) {
+                        return null;
+                    }
+                }
+        );
+    }
 
     public static ConfigSettingsState getInstance() {
         return ApplicationManager.getApplication().getService(ConfigSettingsState.class);
@@ -34,25 +55,40 @@ public class ConfigSettingsState implements PersistentStateComponent<ConfigSetti
     @Override
     public void loadState(@NotNull ConfigSettingsState state) {
         XmlSerializerUtil.copyBean(state, this);
-        ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
-        Optional.ofNullable(this.configFilePath).ifPresent(
-                (it) -> {
-                    String path = it.replaceAll("^~", System.getProperty("user.home"));
-                    try {
-                        File configYaml = new File(path);
-                        // create config file if not exist
-                        var created = configYaml.createNewFile();
-                        if (!created) {
-                            pluginConfig = mapper.readValue(new File(path), PluginConfig.class);
-                        }
-                    } catch (Exception e) {
-                        pluginConfig = null;
-                    }
-                }
-        );
     }
 
     public Optional<PluginConfig> getPluginConfig() {
         return Optional.ofNullable(pluginConfig);
     }
+
+    public String getConfigFilePath() {
+        return configFilePath;
+    }
+    public Optional<String> getConfigFilePathSafe() {
+        return Optional.ofNullable(configFilePath);
+    }
+
+    public void setConfigFilePath(String configFilePath) {
+        this.configFilePath = configFilePath;
+        loadPluginConfigWhenPathChange(configFilePath).ifPresent(config -> this.pluginConfig = config);
+    }
+
+    public String getDomain() {
+        return domain;
+    }
+
+    public Optional<String> getDomainSafe() {
+        return Optional.ofNullable(domain);
+    }
+
+    public void setDomain(String domain) {
+        this.domain = domain;
+    }
+
+    public void saveCookie(String cookieStr) {
+        getPluginConfig().ifPresent(
+                it -> it.setCookie(cookieStr)
+        );
+    }
+
 }

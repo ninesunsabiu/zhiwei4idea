@@ -7,7 +7,6 @@ import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.Optional;
 
 public class PluginSettingsConfigurable implements Configurable {
     private ConfigSettingsUiComponent myUiComponent;
@@ -32,23 +31,23 @@ public class PluginSettingsConfigurable implements Configurable {
     @Override
     public boolean isModified() {
         ConfigSettingsState settingsState = ConfigSettingsState.getInstance();
-        return !myUiComponent.getConfigPath().equals(settingsState.configFilePath);
+        boolean modify = !myUiComponent.getConfigPath().equals(settingsState.getConfigFilePath());
+        modify |= !myUiComponent.getDomainText().equals(settingsState.getDomain());
+        return modify;
     }
 
     @Override
     public void apply() {
         var settingState = ConfigSettingsState.getInstance();
-        settingState.configFilePath = myUiComponent.getConfigPath();
+        settingState.setConfigFilePath(myUiComponent.getConfigPath());
+        settingState.setDomain(myUiComponent.getDomainText());
     }
 
     @Override
     public void reset() {
         var settingState = ConfigSettingsState.getInstance();
-        Optional
-                .ofNullable(settingState.configFilePath)
-                .ifPresent(
-                        (it) -> myUiComponent.setConfigPath(it)
-                );
+        settingState.getConfigFilePathSafe().ifPresent(myUiComponent::setConfigPath);
+        settingState.getDomainSafe().ifPresent(myUiComponent::setDomainText);
     }
 
     @Override
