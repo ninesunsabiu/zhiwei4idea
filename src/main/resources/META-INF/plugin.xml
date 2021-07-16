@@ -3,10 +3,15 @@
     <name>Zhiwei4Idea</name>
     <vendor email="ninesuns.lin@outlook.com" url="https://github.com/ninesunsabiu">Ezio Lin</vendor>
 
-    <!--suppress PluginXmlValidity -->
     <description><![CDATA[
-    <h1>zhiwei utils for idea</h1>
-    ]]></description>
+      inlined during build from description.html
+      ]]>
+    </description>
+
+    <change-notes><![CDATA[
+      inlined during build from change-notes.html
+      ]]>
+    </change-notes>
 
     <!-- please see https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html
          on how to target different products -->
