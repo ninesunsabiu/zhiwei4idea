@@ -19,15 +19,35 @@
     <depends>Git4Idea</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <!-- Add your extensions here -->
-        <completion.contributor language="TEXT" order="first, before commitCompletion" implementationClass="cn.eziolin.zhiwei4idea.idea.VuCodeCompletionContributor"/>
-        <vcsCheckinHandlerFactory implementation="cn.eziolin.zhiwei4idea.idea.CompletionCheckinHandlerFactory"/>
-        <projectService serviceInterface="cn.eziolin.zhiwei4idea.idea.service.CompletionService" serviceImplementation="cn.eziolin.zhiwei4idea.idea.service.CompletionServiceImpl"/>
-        <applicationService serviceImplementation="cn.eziolin.zhiwei4idea.idea.service.ConfigSettingsState" />
+        <completion.contributor
+                language="TEXT"
+                order="first, before commitCompletion"
+                implementationClass="cn.eziolin.zhiwei4idea.idea.VuCodeCompletionContributor"
+        />
+        <vcsCheckinHandlerFactory
+                implementation="cn.eziolin.zhiwei4idea.idea.CompletionCheckinHandlerFactory"
+        />
+        <projectService
+                serviceInterface="cn.eziolin.zhiwei4idea.idea.service.CompletionService"
+                serviceImplementation="cn.eziolin.zhiwei4idea.idea.service.CompletionServiceImpl"
+        />
+        <applicationService
+                serviceImplementation="cn.eziolin.zhiwei4idea.idea.service.ConfigSettingsState"
+        />
         <applicationConfigurable
                 id="cn.eziolin.zhiwei4idea.idea.PluginSettingsConfigurable"
                 parentId="project.propVCSSupport.Mappings"
                 instance="cn.eziolin.zhiwei4idea.idea.PluginSettingsConfigurable"
+        />
+        <toolWindow
+                id="ZhiweiViewer"
+                anchor="right"
+                factoryClass="cn.eziolin.zhiwei4idea.idea.ZhiweiWindowFactory"
+        />
+        <projectService
+                id="ViewService"
+                serviceInterface="cn.eziolin.zhiwei4idea.idea.service.ZhiweiViewerService"
+                serviceImplementation="cn.eziolin.zhiwei4idea.idea.service.ZhiweiViewerServiceImpl"
         />
     </extensions>
 

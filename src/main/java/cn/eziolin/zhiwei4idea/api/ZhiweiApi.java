@@ -6,6 +6,7 @@ import cn.eziolin.zhiwei4idea.idea.service.ConfigSettingsState;
 import cn.eziolin.zhiwei4idea.model.PluginConfig;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.util.io.HttpRequests;
 
 import java.io.IOException;
@@ -21,6 +22,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class ZhiweiApi {
@@ -67,7 +69,7 @@ public class ZhiweiApi {
                 keyword
         );
         var apiUrl = "/api/v1/view/whole/filter?orgId=771ac1a5-fca5-4af2-b744-27b16e989b18";
-        return  Optional.of(getState())
+        return Optional.of(getState())
                 .map(ConfigSettingsState::getDomain)
                 .map(domain -> domain + apiUrl)
                 .map(URI::create)
@@ -95,7 +97,8 @@ public class ZhiweiApi {
                                         ).connect(
                                                 request -> {
                                                     var urlConnection = (HttpURLConnection) request.getConnection();
-                                                    String jsonInputString = String.format("{\"username\":\"%s\",\"password\":\"%s\"}", config.getUsername(), config.getPassword());
+                                                    String jsonInputString =
+                                                            String.format("{\"username\":\"%s\",\"password\":\"%s\"}", config.getUsername(), config.getPassword());
                                                     try (OutputStream os = urlConnection.getOutputStream()) {
                                                         byte[] input = jsonInputString.getBytes(StandardCharsets.UTF_8);
                                                         os.write(input, 0, input.length);
@@ -106,6 +109,22 @@ public class ZhiweiApi {
                             } catch (IOException e) {
                                 return null;
                             }
+                        }
+                )
+        );
+    }
+
+    public static void initSdk() {
+        Consumer<String> noop = (String cookieStr) -> {};
+        initSdk(noop);
+    }
+
+    public static void initSdk(Consumer<String> done) {
+        ApplicationManager.getApplication().executeOnPooledThread(
+                () -> getCookieStr().ifPresent(
+                        (cookieStr) -> {
+                            getState().saveCookie(cookieStr);
+                            done.accept(cookieStr);
                         }
                 )
         );
@@ -131,7 +150,8 @@ class JsonBodyHandler<T> implements HttpResponse.BodyHandler<Supplier<BaseRespon
 
         return HttpResponse.BodySubscribers.mapping(
                 upstream,
-                inputStream -> toSupplierOfType(inputStream, targetType));
+                inputStream -> toSupplierOfType(inputStream, targetType)
+        );
     }
 
     public static <W> Supplier<BaseResponse<W>> toSupplierOfType(InputStream inputStream, Class<W> targetType) {

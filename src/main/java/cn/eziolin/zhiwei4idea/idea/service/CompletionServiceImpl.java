@@ -2,7 +2,6 @@ package cn.eziolin.zhiwei4idea.idea.service;
 
 import cn.eziolin.zhiwei4idea.api.ZhiweiApi;
 import com.intellij.openapi.Disposable;
-import com.intellij.openapi.application.ApplicationManager;
 import com.intellij.openapi.vcs.CheckinProjectPanel;
 import com.intellij.ui.AncestorListenerAdapter;
 import com.intellij.ui.EditorTextComponent;
@@ -20,11 +19,7 @@ public class CompletionServiceImpl implements CompletionService, Disposable {
     private final AncestorListenerAdapter whenCheckinPanelShownChange = new AncestorListenerAdapter() {
         @Override
         public void ancestorAdded(AncestorEvent event) {
-            ApplicationManager.getApplication().executeOnPooledThread(
-                    () -> ZhiweiApi.getCookieStr().ifPresent(
-                            it -> ConfigSettingsState.getInstance().saveCookie(it)
-                    )
-            );
+            ZhiweiApi.initSdk();
         }
     };
 
