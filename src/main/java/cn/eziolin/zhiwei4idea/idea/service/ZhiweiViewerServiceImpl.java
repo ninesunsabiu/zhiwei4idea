@@ -64,6 +64,11 @@ public class ZhiweiViewerServiceImpl implements ZhiweiViewerService, Disposable 
     }
 
     @Override
+    public void reload() {
+        webView.getCefBrowser().reload();
+    }
+
+    @Override
     public void dispose() {
         Disposer.dispose(webView);
     }

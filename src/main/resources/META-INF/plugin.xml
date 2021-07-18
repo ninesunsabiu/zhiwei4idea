@@ -51,4 +51,11 @@
         />
     </extensions>
 
+    <actions>
+        <action
+                id="cn.eziolin.zhiwei4idea.idea.ReloadZhiweiViewerAction"
+                class="cn.eziolin.zhiwei4idea.idea.ReloadZhiweiViewerAction"
+                text="Reload Zhiwei Viewer"
+        />
+    </actions>
 </idea-plugin>

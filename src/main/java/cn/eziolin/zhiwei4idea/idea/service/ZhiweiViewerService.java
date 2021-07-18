@@ -11,4 +11,6 @@ public interface ZhiweiViewerService {
 
     @NotNull
     JComponent getWebViewComponent();
+
+    void reload();
 }
