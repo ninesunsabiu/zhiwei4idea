@@ -6,14 +6,14 @@ import com.intellij.ui.jcef.JBCefApp;
 import com.intellij.ui.jcef.JBCefBrowser;
 import org.cef.network.CefCookie;
 import org.cef.network.CefCookieManager;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.net.HttpCookie;
-import java.util.Optional;
 
 public class ZhiweiViewerServiceImpl implements ZhiweiViewerService, Disposable {
 
-    private JBCefBrowser webView = null;
+    private JBCefBrowser webView;
 
     public ZhiweiViewerServiceImpl() {
         if (JBCefApp.isSupported()) {
@@ -59,12 +59,12 @@ public class ZhiweiViewerServiceImpl implements ZhiweiViewerService, Disposable 
     }
 
     @Override
-    public Optional<JComponent> getWebViewComponent() {
-        return Optional.ofNullable(webView).map(JBCefBrowser::getComponent);
+    public @NotNull JComponent getWebViewComponent() {
+        return webView.getComponent();
     }
 
     @Override
     public void dispose() {
-        Optional.ofNullable(webView).ifPresent(Disposer::dispose);
+        Disposer.dispose(webView);
     }
 }

@@ -22,6 +22,6 @@ public class ZhiweiWindowFactory implements ToolWindowFactory {
         var viewerService = ServiceManager.getService(project, ZhiweiViewerService.class);
 
         ZhiweiApi.initSdk(viewerService::setCookie);
-        viewerService.getWebViewComponent().ifPresent(parentContainer::add);
+        parentContainer.add(viewerService.getWebViewComponent());
     }
 }
