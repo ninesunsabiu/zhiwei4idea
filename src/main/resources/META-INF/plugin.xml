@@ -40,12 +40,12 @@
                 instance="cn.eziolin.zhiwei4idea.idea.PluginSettingsConfigurable"
         />
         <toolWindow
-                id="ZhiweiViewer"
+                id="cn.eziolin.zhiwei4idea.idea.ZhiweiViewer"
                 anchor="right"
                 factoryClass="cn.eziolin.zhiwei4idea.idea.ZhiweiWindowFactory"
         />
         <projectService
-                id="ViewService"
+                id="cn.eziolin.zhiwei4idea.idea.service.ZhiweiViewerService"
                 serviceInterface="cn.eziolin.zhiwei4idea.idea.service.ZhiweiViewerService"
                 serviceImplementation="cn.eziolin.zhiwei4idea.idea.service.ZhiweiViewerServiceImpl"
         />

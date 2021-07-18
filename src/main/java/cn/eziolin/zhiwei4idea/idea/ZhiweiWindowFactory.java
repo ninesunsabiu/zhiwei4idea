@@ -9,6 +9,12 @@ import com.intellij.openapi.wm.ToolWindowFactory;
 import org.jetbrains.annotations.NotNull;
 
 public class ZhiweiWindowFactory implements ToolWindowFactory {
+
+    @Override
+    public void init(@NotNull ToolWindow toolWindow) {
+        toolWindow.setStripeTitle("ZhiweiViewer");
+    }
+
     @Override
     public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
         var component = toolWindow.getComponent();
