@@ -1,5 +1,6 @@
 package cn.eziolin.zhiwei4idea.idea.service;
 
+import cn.eziolin.zhiwei4idea.api.ZhiweiApi;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.jcef.JBCefApp;
@@ -14,11 +15,12 @@ import java.util.Optional;
 public class ZhiweiViewerServiceImpl implements ZhiweiViewerService, Disposable {
 
     private JBCefBrowser webView = null;
+    private String url = null;
 
     public ZhiweiViewerServiceImpl() {
         if (JBCefApp.isSupported()) {
             var defaultUrl = ConfigSettingsState.getInstance().getDomainSafe();
-
+            url = defaultUrl.orElse(null);
             defaultUrl.map(JBCefBrowser::new)
                     .ifPresentOrElse(
                             (jbCefBrowser -> webView = jbCefBrowser),
@@ -60,7 +62,12 @@ public class ZhiweiViewerServiceImpl implements ZhiweiViewerService, Disposable 
 
     @Override
     public void reload() {
-        webView.getCefBrowser().reload();
+        ZhiweiApi.initSdk(
+                cookieStr -> {
+                    setCookie(cookieStr);
+                    webView.getCefBrowser().loadURL(url);
+                }
+        );
     }
 
     @Override
