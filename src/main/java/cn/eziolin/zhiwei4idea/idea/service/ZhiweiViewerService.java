@@ -1,16 +1,12 @@
 package cn.eziolin.zhiwei4idea.idea.service;
 
-import org.jetbrains.annotations.NotNull;
-
 import javax.swing.*;
+import java.util.Optional;
 
 public interface ZhiweiViewerService {
-    void setUrl(String url);
-
     void setCookie(String cookieStr);
 
-    @NotNull
-    JComponent getWebViewComponent();
+    Optional<JComponent> getWebViewComponent();
 
     void reload();
 }
