@@ -25,9 +25,26 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class ZhiweiApi {
+    private static <W> HttpResponse.BodyHandler<Supplier<BaseResponse<W>>> asJSON(Class<W> targetType) {
+        HttpResponse.BodySubscriber<InputStream> upstream = HttpResponse.BodySubscribers.ofInputStream();
+
+        final Function<InputStream, Supplier<BaseResponse<W>>> fn = (InputStream inputStream) -> () -> {
+            try (InputStream stream = inputStream) {
+                ObjectMapper objectMapper = new ObjectMapper();
+                JavaType type = objectMapper.getTypeFactory().constructParametricType(BaseResponse.class, targetType);
+                return objectMapper.readValue(stream, type);
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        };
+
+        return (response) -> HttpResponse.BodySubscribers.mapping(upstream, fn);
+    }
+
     private static ConfigSettingsState getState() {
         return ConfigSettingsState.getInstance();
     }
@@ -82,7 +99,7 @@ public class ZhiweiApi {
                         builder -> {
                             var client = HttpClient.newHttpClient();
                             var request = builder.POST(HttpRequest.BodyPublishers.ofString(payload.get())).build();
-                            return client.sendAsync(request, new JsonBodyHandler<>(ViewMeta.class));
+                            return client.sendAsync(request, asJSON(ViewMeta.class));
                         }
                 );
     }
@@ -132,40 +149,5 @@ public class ZhiweiApi {
                         }
                 )
         );
-    }
-}
-
-class JsonBodyHandler<T> implements HttpResponse.BodyHandler<Supplier<BaseResponse<T>>> {
-
-    private final Class<T> targetClass;
-
-    public JsonBodyHandler(Class<T> targetClass) {
-        this.targetClass = targetClass;
-    }
-
-    public static <W> HttpResponse.BodySubscriber<Supplier<BaseResponse<W>>> asJSON(Class<W> targetType) {
-        HttpResponse.BodySubscriber<InputStream> upstream = HttpResponse.BodySubscribers.ofInputStream();
-
-        return HttpResponse.BodySubscribers.mapping(
-                upstream,
-                inputStream -> toSupplierOfType(inputStream, targetType)
-        );
-    }
-
-    public static <W> Supplier<BaseResponse<W>> toSupplierOfType(InputStream inputStream, Class<W> targetType) {
-        return () -> {
-            try (InputStream stream = inputStream) {
-                ObjectMapper objectMapper = new ObjectMapper();
-                JavaType type = objectMapper.getTypeFactory().constructParametricType(BaseResponse.class, targetType);
-                return objectMapper.readValue(stream, type);
-            } catch (IOException e) {
-                throw new UncheckedIOException(e);
-            }
-        };
-    }
-
-    @Override
-    public HttpResponse.BodySubscriber<Supplier<BaseResponse<T>>> apply(HttpResponse.ResponseInfo responseInfo) {
-        return asJSON(this.targetClass);
     }
 }
