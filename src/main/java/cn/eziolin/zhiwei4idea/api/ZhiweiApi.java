@@ -4,6 +4,7 @@ import cn.eziolin.zhiwei4idea.api.model.BaseResponse;
 import cn.eziolin.zhiwei4idea.api.model.ViewMeta;
 import cn.eziolin.zhiwei4idea.idea.service.ConfigSettingsState;
 import cn.eziolin.zhiwei4idea.model.PluginConfig;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intellij.openapi.application.ApplicationManager;
@@ -19,6 +20,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -26,48 +28,49 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class ZhiweiApi {
-    private static ConfigSettingsState getState() { return ConfigSettingsState.getInstance(); }
+    private static ConfigSettingsState getState() {
+        return ConfigSettingsState.getInstance();
+    }
 
     private static Optional<HttpRequest.Builder> getMyHttpRequestBuilder() {
         return getState().getPluginConfig().map(
-                        PluginConfig::getCookie
-                ).map(
-                        it -> HttpRequest.newBuilder()
-                                .setHeader("cookie", it)
-                                .setHeader("content-type", HttpRequests.JSON_CONTENT_TYPE)
-                                .setHeader("accept", HttpRequests.JSON_CONTENT_TYPE)
-                );
+                PluginConfig::getCookie
+        ).map(
+                it -> HttpRequest.newBuilder()
+                        .setHeader("cookie", it)
+                        .setHeader("content-type", HttpRequests.JSON_CONTENT_TYPE)
+                        .setHeader("accept", HttpRequests.JSON_CONTENT_TYPE)
+        );
     }
 
 
     public static Optional<CompletableFuture<HttpResponse<Supplier<BaseResponse<ViewMeta>>>>> searchCard(String keyword) {
-        String payload = String.format(
-                "{" +
-                    "\"filter\":[" +
-                        "{" +
-                            "\"flag\":\"keyword\"," +
-                            "\"operator\":\"Include\"," +
-                            "\"tag\":\"ComparableArgument\"," +
-                            "\"type\":\"TEXT\"," +
-                            // format here
-                            "\"value\":\"%s\"" +
-                        "}," +
-                        "{" +
-                            "\"flag\":\"updateDate\"," +
-                            "\"multiple\":false," +
-                            "\"name\":\"$page\"," +
-                            "\"order\":\"desc\"," +
-                            "\"page\":0," +
-                            "\"pageSize\":20," +
-                            "\"required\":true," +
-                            "\"tag\":\"PageableArgument\"," +
-                            "\"type\":\"DATE\"" +
-                        "}" +
-                    "]" +
-                "}"
-                ,
-                keyword
+        var keywordFilter = Map.ofEntries(
+                Map.entry("flag", "keyword"),
+                Map.entry("operator", "Include"),
+                Map.entry("tag", "ComparableArgument"),
+                Map.entry("type", "TEXT"),
+                Map.entry("value", keyword)
         );
+        var pageableFilter = Map.ofEntries(
+                Map.entry("flag", "updateDate"),
+                Map.entry("multiple", false),
+                Map.entry("name", "$page"),
+                Map.entry("order", "desc"),
+                Map.entry("page", 0),
+                Map.entry("pageSize", 20),
+                Map.entry("required", true),
+                Map.entry("tag", "PageableArgument"),
+                Map.entry("type", "DATE")
+        );
+        var filterObj = Map.of("filter", Arrays.asList(keywordFilter, pageableFilter));
+        Supplier<String> payload = () -> {
+            try {
+                return new ObjectMapper().writeValueAsString(filterObj);
+            } catch (JsonProcessingException e) {
+                return "";
+            }
+        };
         var apiUrl = "/api/v1/view/whole/filter?orgId=771ac1a5-fca5-4af2-b744-27b16e989b18";
         return Optional.of(getState())
                 .map(ConfigSettingsState::getDomain)
@@ -78,7 +81,7 @@ public class ZhiweiApi {
                 ).map(
                         builder -> {
                             var client = HttpClient.newHttpClient();
-                            var request = builder.POST(HttpRequest.BodyPublishers.ofString(payload)).build();
+                            var request = builder.POST(HttpRequest.BodyPublishers.ofString(payload.get())).build();
                             return client.sendAsync(request, new JsonBodyHandler<>(ViewMeta.class));
                         }
                 );
@@ -115,7 +118,8 @@ public class ZhiweiApi {
     }
 
     public static void initSdk() {
-        Consumer<String> noop = (String cookieStr) -> {};
+        Consumer<String> noop = (String cookieStr) -> {
+        };
         initSdk(noop);
     }
 
@@ -139,12 +143,6 @@ class JsonBodyHandler<T> implements HttpResponse.BodyHandler<Supplier<BaseRespon
         this.targetClass = targetClass;
     }
 
-    @Override
-    public HttpResponse.BodySubscriber<Supplier<BaseResponse<T>>> apply(HttpResponse.ResponseInfo responseInfo) {
-        return asJSON(this.targetClass);
-    }
-
-
     public static <W> HttpResponse.BodySubscriber<Supplier<BaseResponse<W>>> asJSON(Class<W> targetType) {
         HttpResponse.BodySubscriber<InputStream> upstream = HttpResponse.BodySubscribers.ofInputStream();
 
@@ -164,5 +162,10 @@ class JsonBodyHandler<T> implements HttpResponse.BodyHandler<Supplier<BaseRespon
                 throw new UncheckedIOException(e);
             }
         };
+    }
+
+    @Override
+    public HttpResponse.BodySubscriber<Supplier<BaseResponse<T>>> apply(HttpResponse.ResponseInfo responseInfo) {
+        return asJSON(this.targetClass);
     }
 }
