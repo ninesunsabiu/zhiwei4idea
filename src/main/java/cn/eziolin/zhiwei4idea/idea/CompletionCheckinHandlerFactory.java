@@ -11,16 +11,17 @@ import org.jetbrains.annotations.NotNull;
 
 public class CompletionCheckinHandlerFactory extends VcsCheckinHandlerFactory {
 
-    protected CompletionCheckinHandlerFactory() {
-        super(GitVcs.getKey());
-    }
+  protected CompletionCheckinHandlerFactory() {
+    super(GitVcs.getKey());
+  }
 
-    @NotNull
-    @Override
-    protected CheckinHandler createVcsHandler(@NotNull CheckinProjectPanel panel, @NotNull CommitContext commitContext) {
-        var project = panel.getProject();
-        // hack the panel
-        project.getService(CompletionService.class).setCheckinProjectPanel(panel);
-        return new CompletionCheckinHandler();
-    }
+  @NotNull
+  @Override
+  protected CheckinHandler createVcsHandler(
+      @NotNull CheckinProjectPanel panel, @NotNull CommitContext commitContext) {
+    var project = panel.getProject();
+    // hack the panel
+    project.getService(CompletionService.class).setCheckinProjectPanel(panel);
+    return new CompletionCheckinHandler();
+  }
 }

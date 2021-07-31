@@ -12,22 +12,22 @@ import java.util.function.BiConsumer;
 
 public class VuCodeCompletionProvider extends CompletionProvider<CompletionParameters> {
 
-    private final BiConsumer<CompletionParameters, CompletionResultSet> addCompletionsFn;
+  private final BiConsumer<CompletionParameters, CompletionResultSet> addCompletionsFn;
 
-    public VuCodeCompletionProvider(
-            BiConsumer<CompletionParameters, CompletionResultSet> addCompletionsFn
-    ) {
-        this.addCompletionsFn = addCompletionsFn;
+  public VuCodeCompletionProvider(
+      BiConsumer<CompletionParameters, CompletionResultSet> addCompletionsFn) {
+    this.addCompletionsFn = addCompletionsFn;
+  }
+
+  @Override
+  protected void addCompletions(
+      @NotNull CompletionParameters parameters,
+      @NotNull ProcessingContext context,
+      @NotNull CompletionResultSet result) {
+    var project = parameters.getPosition().getProject();
+    if (CollectionUtils.isNotEmpty(
+        project.getService(CompletionService.class).getAffectedFiles())) {
+      addCompletionsFn.accept(parameters, result);
     }
-
-    @Override
-    protected void addCompletions(@NotNull CompletionParameters parameters,
-                                  @NotNull ProcessingContext context,
-                                  @NotNull CompletionResultSet result) {
-        var project = parameters.getPosition().getProject();
-        if (CollectionUtils.isNotEmpty(project.getService(CompletionService.class).getAffectedFiles())) {
-            addCompletionsFn.accept(parameters, result);
-        }
-    }
-
+  }
 }

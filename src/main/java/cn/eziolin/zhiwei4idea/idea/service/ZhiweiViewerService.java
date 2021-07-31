@@ -4,9 +4,9 @@ import javax.swing.*;
 import java.util.Optional;
 
 public interface ZhiweiViewerService {
-    void setCookie(String cookieStr);
+  void setCookie(String cookieStr);
 
-    Optional<JComponent> getWebViewComponent();
+  Optional<JComponent> getWebViewComponent();
 
-    void reload();
+  void reload();
 }

@@ -9,10 +9,9 @@ import org.jetbrains.annotations.NotNull;
 import java.util.Optional;
 
 public class ReloadZhiweiViewerAction extends AnAction {
-    @Override
-    public void actionPerformed(@NotNull AnActionEvent e) {
-        Optional.ofNullable(e.getProject()).ifPresent(
-                it -> ServiceManager.getService(it, ZhiweiViewerService.class).reload()
-        );
-    }
+  @Override
+  public void actionPerformed(@NotNull AnActionEvent e) {
+    Optional.ofNullable(e.getProject())
+        .ifPresent(it -> ServiceManager.getService(it, ZhiweiViewerService.class).reload());
+  }
 }

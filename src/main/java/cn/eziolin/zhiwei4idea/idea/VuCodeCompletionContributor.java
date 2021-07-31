@@ -7,11 +7,10 @@ import com.intellij.patterns.PlatformPatterns;
 import com.intellij.psi.PlainTextTokenTypes;
 
 public class VuCodeCompletionContributor extends CompletionContributor {
-    public VuCodeCompletionContributor() {
-        extend(
-                CompletionType.BASIC,
-                PlatformPatterns.psiElement(PlainTextTokenTypes.PLAIN_TEXT),
-                new VuCodeCompletionProvider(new VuCodeCompletionProviderDelegate())
-        );
-    }
+  public VuCodeCompletionContributor() {
+    extend(
+        CompletionType.BASIC,
+        PlatformPatterns.psiElement(PlainTextTokenTypes.PLAIN_TEXT),
+        new VuCodeCompletionProvider(new VuCodeCompletionProviderDelegate()));
+  }
 }

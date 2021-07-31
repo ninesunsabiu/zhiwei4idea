@@ -14,64 +14,61 @@ import java.util.Optional;
 
 public class ZhiweiViewerServiceImpl implements ZhiweiViewerService, Disposable {
 
-    private JBCefBrowser webView = null;
-    private String url = null;
+  private JBCefBrowser webView = null;
+  private String url = null;
 
-    public ZhiweiViewerServiceImpl() {
-        if (JBCefApp.isSupported()) {
-            var defaultUrl = ConfigSettingsState.getInstance().getDomainSafe();
-            url = defaultUrl.orElse(null);
-            defaultUrl.map(JBCefBrowser::new)
-                    .ifPresentOrElse(
-                            (jbCefBrowser -> webView = jbCefBrowser),
-                            () -> webView = new JBCefBrowser()
-                    );
-        }
+  public ZhiweiViewerServiceImpl() {
+    if (JBCefApp.isSupported()) {
+      var defaultUrl = ConfigSettingsState.getInstance().getDomainSafe();
+      url = defaultUrl.orElse(null);
+      defaultUrl
+          .map(JBCefBrowser::new)
+          .ifPresentOrElse(
+              (jbCefBrowser -> webView = jbCefBrowser), () -> webView = new JBCefBrowser());
     }
+  }
 
-    @Override
-    public void setCookie(String cookieStr) {
-        var domainOptional = ConfigSettingsState.getInstance().getDomainSafe();
-        domainOptional.ifPresent(
-                domain -> HttpCookie.parse("set-cookie:" + cookieStr).forEach(
-                        cookie -> CefCookieManager.getGlobalManager().setCookie(
+  @Override
+  public void setCookie(String cookieStr) {
+    var domainOptional = ConfigSettingsState.getInstance().getDomainSafe();
+    domainOptional.ifPresent(
+        domain ->
+            HttpCookie.parse("set-cookie:" + cookieStr)
+                .forEach(
+                    cookie ->
+                        CefCookieManager.getGlobalManager()
+                            .setCookie(
                                 domain,
                                 new CefCookie(
-                                        cookie.getName(),
-                                        cookie.getValue(),
-                                        cookie.getDomain(),
-                                        cookie.getPath(),
-                                        cookie.getSecure(),
-                                        cookie.isHttpOnly(),
-                                        new java.util.Date(),
-                                        new java.util.Date(),
-                                        cookie.hasExpired(),
-                                        new java.util.Date(
-                                                System.currentTimeMillis() + cookie.getMaxAge()
-                                        )
-                                )
-                        )
-                )
-        );
-    }
+                                    cookie.getName(),
+                                    cookie.getValue(),
+                                    cookie.getDomain(),
+                                    cookie.getPath(),
+                                    cookie.getSecure(),
+                                    cookie.isHttpOnly(),
+                                    new java.util.Date(),
+                                    new java.util.Date(),
+                                    cookie.hasExpired(),
+                                    new java.util.Date(
+                                        System.currentTimeMillis() + cookie.getMaxAge())))));
+  }
 
-    @Override
-    public Optional<JComponent> getWebViewComponent() {
-        return Optional.ofNullable(webView).map(JBCefBrowser::getComponent);
-    }
+  @Override
+  public Optional<JComponent> getWebViewComponent() {
+    return Optional.ofNullable(webView).map(JBCefBrowser::getComponent);
+  }
 
-    @Override
-    public void reload() {
-        ZhiweiApi.initSdk(
-                cookieStr -> {
-                    setCookie(cookieStr);
-                    webView.getCefBrowser().loadURL(url);
-                }
-        );
-    }
+  @Override
+  public void reload() {
+    ZhiweiApi.initSdk(
+        cookieStr -> {
+          setCookie(cookieStr);
+          webView.getCefBrowser().loadURL(url);
+        });
+  }
 
-    @Override
-    public void dispose() {
-        Optional.ofNullable(webView).ifPresent(Disposer::dispose);
-    }
+  @Override
+  public void dispose() {
+    Optional.ofNullable(webView).ifPresent(Disposer::dispose);
+  }
 }

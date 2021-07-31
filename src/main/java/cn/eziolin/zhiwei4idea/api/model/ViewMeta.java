@@ -7,9 +7,10 @@ import java.util.List;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ViewMeta {
-    public final List<Card> caches;
 
-    public ViewMeta(@JsonProperty("caches") List<Card> caches) {
-        this.caches = caches;
-    }
+  public final List<Card> caches;
+
+  public ViewMeta(@JsonProperty("caches") List<Card> caches) {
+    this.caches = caches;
+  }
 }
