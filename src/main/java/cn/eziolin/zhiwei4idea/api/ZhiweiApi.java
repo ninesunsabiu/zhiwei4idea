@@ -53,20 +53,26 @@ public class ZhiweiApi {
     return (response) -> HttpResponse.BodySubscribers.mapping(upstream, fn);
   }
 
-  private static ConfigSettingsState getState() {
-    return ConfigSettingsState.getInstance();
+  private static Optional<ConfigSettingsState> getState() {
+    return Optional.ofNullable(ConfigSettingsState.getInstance());
   }
 
-  private static Optional<HttpRequest.Builder> getMyHttpRequestBuilder() {
+  private static Optional<HttpRequest.Builder> getMyHttpRequestBuilder(String api) {
+    var headerBuilder =
+        getState()
+            .flatMap(ConfigSettingsState::getPluginConfig)
+            .map(PluginConfig::getCookie)
+            .map(
+                it ->
+                    HttpRequest.newBuilder()
+                        .setHeader("cookie", it)
+                        .setHeader("content-type", HttpRequests.JSON_CONTENT_TYPE)
+                        .setHeader("accept", HttpRequests.JSON_CONTENT_TYPE));
     return getState()
-        .getPluginConfig()
-        .map(PluginConfig::getCookie)
-        .map(
-            it ->
-                HttpRequest.newBuilder()
-                    .setHeader("cookie", it)
-                    .setHeader("content-type", HttpRequests.JSON_CONTENT_TYPE)
-                    .setHeader("accept", HttpRequests.JSON_CONTENT_TYPE));
+        .flatMap(ConfigSettingsState::getDomainSafe)
+        .map(domain -> domain + api)
+        .map(URI::create)
+        .flatMap(uri -> headerBuilder.map(builder -> builder.uri(uri)));
   }
 
   public static Optional<CompletableFuture<HttpResponse<Supplier<BaseResponse<ViewMeta>>>>>
@@ -99,11 +105,7 @@ public class ZhiweiApi {
           }
         };
     var apiUrl = "/api/v1/view/whole/filter?orgId=771ac1a5-fca5-4af2-b744-27b16e989b18";
-    return Optional.of(getState())
-        .map(ConfigSettingsState::getDomain)
-        .map(domain -> domain + apiUrl)
-        .map(URI::create)
-        .flatMap(uri -> getMyHttpRequestBuilder().map(builder -> builder.uri(uri)))
+    return getMyHttpRequestBuilder(apiUrl)
         .map(
             builder -> {
               var client = HttpClient.newHttpClient();
@@ -114,7 +116,7 @@ public class ZhiweiApi {
   }
 
   public static Optional<String> getCookieStr() {
-    var maybeState = Optional.of(getState());
+    var maybeState = getState();
     return maybeState
         .map(ConfigSettingsState::getDomain)
         .flatMap(
@@ -163,7 +165,7 @@ public class ZhiweiApi {
                 getCookieStr()
                     .ifPresent(
                         (cookieStr) -> {
-                          getState().saveCookie(cookieStr);
+                          getState().ifPresent(it -> it.saveCookie(cookieStr));
                           done.accept(cookieStr);
                         }));
   }
