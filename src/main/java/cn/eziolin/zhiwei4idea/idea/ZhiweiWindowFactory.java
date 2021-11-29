@@ -7,6 +7,8 @@ import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Optional;
+
 public class ZhiweiWindowFactory implements ToolWindowFactory {
 
   @Override
@@ -16,11 +18,14 @@ public class ZhiweiWindowFactory implements ToolWindowFactory {
 
   @Override
   public void createToolWindowContent(@NotNull Project project, @NotNull ToolWindow toolWindow) {
-    var component = toolWindow.getComponent();
-    var parentContainer = component.getParent();
-    var viewerService = project.getService(ZhiweiViewerService.class);
+    Optional.ofNullable(project.getService(ZhiweiViewerService.class))
+        .ifPresent(
+            zhiweiViewerService -> {
+              ZhiweiApi.initSdk(zhiweiViewerService::setCookie);
 
-    ZhiweiApi.initSdk(viewerService::setCookie);
-    viewerService.getWebViewComponent().ifPresent(parentContainer::add);
+              zhiweiViewerService
+                  .getWebViewComponent()
+                  .ifPresent(toolWindow.getComponent().getParent()::add);
+            });
   }
 }

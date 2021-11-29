@@ -11,17 +11,16 @@ import org.cef.network.CefCookieManager;
 import javax.swing.*;
 import java.net.HttpCookie;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 public class ZhiweiViewerServiceImpl implements ZhiweiViewerService, Disposable {
 
-  private JBCefBrowser webView = null;
-  private String url = null;
+  private JBCefBrowser webView;
 
   public ZhiweiViewerServiceImpl() {
     if (JBCefApp.isSupported()) {
-      var defaultUrl = ConfigSettingsState.getInstance().getDomainSafe();
-      url = defaultUrl.orElse(null);
-      defaultUrl
+      ConfigSettingsState.getInstanceSafe()
+          .flatMap(ConfigSettingsState::getDomainSafe)
           .map(JBCefBrowser::new)
           .ifPresentOrElse(
               (jbCefBrowser -> webView = jbCefBrowser), () -> webView = new JBCefBrowser());
@@ -30,27 +29,28 @@ public class ZhiweiViewerServiceImpl implements ZhiweiViewerService, Disposable 
 
   @Override
   public void setCookie(String cookieStr) {
-    var domainOptional = ConfigSettingsState.getInstance().getDomainSafe();
-    domainOptional.ifPresent(
-        domain ->
-            HttpCookie.parse("set-cookie:" + cookieStr)
-                .forEach(
-                    cookie ->
-                        CefCookieManager.getGlobalManager()
-                            .setCookie(
-                                domain,
-                                new CefCookie(
-                                    cookie.getName(),
-                                    cookie.getValue(),
-                                    cookie.getDomain(),
-                                    cookie.getPath(),
-                                    cookie.getSecure(),
-                                    cookie.isHttpOnly(),
-                                    new java.util.Date(),
-                                    new java.util.Date(),
-                                    cookie.hasExpired(),
-                                    new java.util.Date(
-                                        System.currentTimeMillis() + cookie.getMaxAge())))));
+    ConfigSettingsState.getInstanceSafe()
+        .flatMap(ConfigSettingsState::getDomainSafe)
+        .ifPresent(
+            domain ->
+                HttpCookie.parse("set-cookie:" + cookieStr)
+                    .forEach(
+                        cookie ->
+                            CefCookieManager.getGlobalManager()
+                                .setCookie(
+                                    domain,
+                                    new CefCookie(
+                                        cookie.getName(),
+                                        cookie.getValue(),
+                                        cookie.getDomain(),
+                                        cookie.getPath(),
+                                        cookie.getSecure(),
+                                        cookie.isHttpOnly(),
+                                        new java.util.Date(),
+                                        new java.util.Date(),
+                                        cookie.hasExpired(),
+                                        new java.util.Date(
+                                            System.currentTimeMillis() + cookie.getMaxAge())))));
   }
 
   @Override
@@ -61,10 +61,12 @@ public class ZhiweiViewerServiceImpl implements ZhiweiViewerService, Disposable 
   @Override
   public void reload() {
     ZhiweiApi.initSdk(
-        cookieStr -> {
-          setCookie(cookieStr);
-          webView.getCefBrowser().loadURL(url);
-        });
+        ((Consumer<String>) this::setCookie)
+            .andThen(
+                str ->
+                    ConfigSettingsState.getInstanceSafe()
+                        .flatMap(ConfigSettingsState::getDomainSafe)
+                        .ifPresent(webView.getCefBrowser()::loadURL)));
   }
 
   @Override

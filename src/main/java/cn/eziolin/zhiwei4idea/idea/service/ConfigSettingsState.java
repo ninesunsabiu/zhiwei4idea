@@ -46,6 +46,10 @@ public class ConfigSettingsState implements PersistentStateComponent<ConfigSetti
     return ApplicationManager.getApplication().getService(ConfigSettingsState.class);
   }
 
+  public static Optional<ConfigSettingsState> getInstanceSafe() {
+    return Optional.ofNullable(ConfigSettingsState.getInstance());
+  }
+
   @Override
   public @Nullable ConfigSettingsState getState() {
     return this;
