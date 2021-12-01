@@ -1,32 +1,31 @@
 package cn.eziolin.zhiwei4idea.model;
 
 public class PluginConfig {
-    private String username;
-    private String password;
-    private String cookie;
+  private String myUsername;
+  private String myPassword;
+  private String myCookie;
 
-    public String getUsername() {
-        return username;
-    }
+  public String getUsername() {
+    return myUsername;
+  }
 
-    public void setUsername(String username) {
-        this.username = username;
-    }
+  public void setUsername(String username) {
+    this.myUsername = username;
+  }
 
-    public String getPassword() {
-        return password;
-    }
+  public String getPassword() {
+    return myPassword;
+  }
 
-    public void setPassword(String password) {
-        this.password = password;
-    }
+  public void setPassword(String password) {
+    this.myPassword = password;
+  }
 
-    public String getCookie() {
-        return cookie;
-    }
+  public String getCookie() {
+    return myCookie;
+  }
 
-    public void setCookie(String cookie) {
-        this.cookie = cookie;
-    }
-
+  public void setCookie(String cookie) {
+    this.myCookie = cookie;
+  }
 }

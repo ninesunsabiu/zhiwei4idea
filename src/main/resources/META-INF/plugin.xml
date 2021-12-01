@@ -18,7 +18,30 @@
     <depends>com.intellij.modules.platform</depends>
     <depends>Git4Idea</depends>
 
+    <applicationListeners>
+        <listener class="cn.eziolin.zhiwei4idea.idea.Starter"
+                  topic="com.intellij.openapi.project.ProjectManagerListener"/>
+    </applicationListeners>
+
     <extensions defaultExtensionNs="com.intellij">
+        <applicationService
+                serviceImplementation="cn.eziolin.zhiwei4idea.idea.service.ConfigSettingsState"
+        />
+        <projectService
+                id="cn.eziolin.zhiwei4idea.idea.service.CompletionService"
+                serviceInterface="cn.eziolin.zhiwei4idea.idea.service.CompletionService"
+                serviceImplementation="cn.eziolin.zhiwei4idea.idea.service.CompletionServiceImpl"
+        />
+        <projectService
+                id="cn.eziolin.zhiwei4idea.idea.service.ZhiweiViewerService"
+                serviceInterface="cn.eziolin.zhiwei4idea.idea.service.ZhiweiViewerService"
+                serviceImplementation="cn.eziolin.zhiwei4idea.idea.service.ZhiweiViewerServiceImpl"
+        />
+        <applicationConfigurable
+                id="cn.eziolin.zhiwei4idea.idea.PluginSettingsConfigurable"
+                parentId="tools"
+                instance="cn.eziolin.zhiwei4idea.idea.PluginSettingsConfigurable"
+        />
         <completion.contributor
                 language="TEXT"
                 order="first, before commitCompletion"
@@ -27,28 +50,12 @@
         <vcsCheckinHandlerFactory
                 implementation="cn.eziolin.zhiwei4idea.idea.CompletionCheckinHandlerFactory"
         />
-        <projectService
-                serviceInterface="cn.eziolin.zhiwei4idea.idea.service.CompletionService"
-                serviceImplementation="cn.eziolin.zhiwei4idea.idea.service.CompletionServiceImpl"
-        />
-        <applicationService
-                serviceImplementation="cn.eziolin.zhiwei4idea.idea.service.ConfigSettingsState"
-        />
-        <applicationConfigurable
-                id="cn.eziolin.zhiwei4idea.idea.PluginSettingsConfigurable"
-                parentId="tools"
-                instance="cn.eziolin.zhiwei4idea.idea.PluginSettingsConfigurable"
-        />
         <toolWindow
                 id="cn.eziolin.zhiwei4idea.idea.ZhiweiViewer"
                 anchor="right"
                 factoryClass="cn.eziolin.zhiwei4idea.idea.ZhiweiWindowFactory"
         />
-        <projectService
-                id="cn.eziolin.zhiwei4idea.idea.service.ZhiweiViewerService"
-                serviceInterface="cn.eziolin.zhiwei4idea.idea.service.ZhiweiViewerService"
-                serviceImplementation="cn.eziolin.zhiwei4idea.idea.service.ZhiweiViewerServiceImpl"
-        />
+        <notificationGroup id="Zhiwei Notification" displayType="BALLOON"/>
     </extensions>
 
     <actions>

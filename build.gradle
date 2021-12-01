@@ -8,6 +8,7 @@ version '1.0'
 
 repositories {
     maven { url 'https://plugins.gradle.org/m2/' }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots" }
     maven { url 'http://maven.aliyun.com/nexus/content/repositories/google' }
     maven { url 'http://maven.aliyun.com/nexus/content/groups/public/' }
     maven { url 'http://maven.aliyun.com/nexus/content/repositories/jcenter' }
@@ -23,16 +24,20 @@ dependencies {
     implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: '2.12.3'
     // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
     implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.9.8'
+    // https://mvnrepository.com/artifact/io.vavr/vavr
+    implementation group: 'io.vavr', name: 'vavr', version: '1.0.0-alpha-4'
 }
 
 // See https://github.com/JetBrains/gradle-intellij-plugin/
 intellij {
+    localPath = '/Applications/IntelliJ IDEA CE.app'
     plugins = ['Git4Idea']
 }
 
 patchPluginXml {
     changeNotes = "${file('change-notes.html').getText(encoding)}"
     pluginDescription = "${file('description.html').getText(encoding)}"
+    sinceBuild = "211"
 }
 
 processResources {

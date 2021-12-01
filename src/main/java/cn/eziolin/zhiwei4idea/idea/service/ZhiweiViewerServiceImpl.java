@@ -5,6 +5,7 @@ import com.intellij.openapi.Disposable;
 import com.intellij.openapi.util.Disposer;
 import com.intellij.ui.jcef.JBCefApp;
 import com.intellij.ui.jcef.JBCefBrowser;
+import io.vavr.control.Validation;
 import org.cef.network.CefCookie;
 import org.cef.network.CefCookieManager;
 
@@ -18,20 +19,23 @@ public class ZhiweiViewerServiceImpl implements ZhiweiViewerService, Disposable 
   private JBCefBrowser webView;
 
   public ZhiweiViewerServiceImpl() {
-    if (JBCefApp.isSupported()) {
-      ConfigSettingsState.getInstanceSafe()
-          .flatMap(ConfigSettingsState::getDomainSafe)
-          .map(JBCefBrowser::new)
-          .ifPresentOrElse(
-              (jbCefBrowser -> webView = jbCefBrowser), () -> webView = new JBCefBrowser());
-    }
+    Validation.combine(
+            ConfigSettingsState.getInstanceSafe()
+                .fold(
+                    () -> Validation.invalid(new Error("does not set domain")), Validation::valid),
+            JBCefApp.isSupported()
+                ? Validation.valid(true)
+                : Validation.invalid(new Error("Does not Support JCEF")))
+        .ap(
+            (state, _support) ->
+                ConfigSettingsState.getDomainSafe().fold(JBCefBrowser::new, JBCefBrowser::new))
+        .forEach(jbCefBrowser -> webView = jbCefBrowser);
   }
 
   @Override
   public void setCookie(String cookieStr) {
-    ConfigSettingsState.getInstanceSafe()
-        .flatMap(ConfigSettingsState::getDomainSafe)
-        .ifPresent(
+    ConfigSettingsState.getDomainSafe()
+        .forEach(
             domain ->
                 HttpCookie.parse("set-cookie:" + cookieStr)
                     .forEach(
@@ -64,9 +68,7 @@ public class ZhiweiViewerServiceImpl implements ZhiweiViewerService, Disposable 
         ((Consumer<String>) this::setCookie)
             .andThen(
                 str ->
-                    ConfigSettingsState.getInstanceSafe()
-                        .flatMap(ConfigSettingsState::getDomainSafe)
-                        .ifPresent(webView.getCefBrowser()::loadURL)));
+                    ConfigSettingsState.getDomainSafe().forEach(webView.getCefBrowser()::loadURL)));
   }
 
   @Override
