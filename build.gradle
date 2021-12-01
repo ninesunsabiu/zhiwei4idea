@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'cn.eziolin'
-version '1.0'
+version '1.1'
 
 repositories {
     maven { url 'https://plugins.gradle.org/m2/' }
