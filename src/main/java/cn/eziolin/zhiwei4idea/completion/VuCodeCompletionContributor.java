@@ -1,6 +1,5 @@
-package cn.eziolin.zhiwei4idea.idea;
+package cn.eziolin.zhiwei4idea.completion;
 
-import cn.eziolin.zhiwei4idea.VuCodeCompletionProviderDelegate;
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionType;
 import com.intellij.patterns.PlatformPatterns;

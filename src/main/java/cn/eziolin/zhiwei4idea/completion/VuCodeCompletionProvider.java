@@ -1,6 +1,6 @@
-package cn.eziolin.zhiwei4idea.idea;
+package cn.eziolin.zhiwei4idea.completion;
 
-import cn.eziolin.zhiwei4idea.idea.service.CompletionService;
+import cn.eziolin.zhiwei4idea.completion.service.CompletionService;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionProvider;
 import com.intellij.codeInsight.completion.CompletionResultSet;

@@ -1,4 +1,4 @@
-package cn.eziolin.zhiwei4idea.idea.service;
+package cn.eziolin.zhiwei4idea.zhiweiviewer;
 
 import javax.swing.*;
 import java.util.Optional;

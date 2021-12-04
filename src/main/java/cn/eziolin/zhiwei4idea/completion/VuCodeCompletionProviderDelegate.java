@@ -1,4 +1,4 @@
-package cn.eziolin.zhiwei4idea;
+package cn.eziolin.zhiwei4idea.completion;
 
 import cn.eziolin.zhiwei4idea.api.ZhiweiApi;
 import cn.eziolin.zhiwei4idea.api.model.Card;

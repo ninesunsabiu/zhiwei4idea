@@ -1,6 +1,5 @@
-package cn.eziolin.zhiwei4idea.idea;
+package cn.eziolin.zhiwei4idea.setting;
 
-import cn.eziolin.zhiwei4idea.idea.service.ConfigSettingsState;
 import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
 import com.intellij.notification.Notifications;

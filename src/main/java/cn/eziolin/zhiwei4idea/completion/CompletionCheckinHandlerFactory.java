@@ -1,6 +1,6 @@
-package cn.eziolin.zhiwei4idea.idea;
+package cn.eziolin.zhiwei4idea.completion;
 
-import cn.eziolin.zhiwei4idea.idea.service.CompletionService;
+import cn.eziolin.zhiwei4idea.completion.service.CompletionService;
 import com.intellij.openapi.vcs.CheckinProjectPanel;
 import com.intellij.openapi.vcs.changes.CommitContext;
 import com.intellij.openapi.vcs.checkin.CheckinHandler;

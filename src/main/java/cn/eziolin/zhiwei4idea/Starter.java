@@ -1,4 +1,4 @@
-package cn.eziolin.zhiwei4idea.idea;
+package cn.eziolin.zhiwei4idea;
 
 import cn.eziolin.zhiwei4idea.api.ZhiweiApi;
 import com.intellij.openapi.project.Project;

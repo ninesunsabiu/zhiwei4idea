@@ -1,6 +1,5 @@
-package cn.eziolin.zhiwei4idea.idea;
+package cn.eziolin.zhiwei4idea.zhiweiviewer;
 
-import cn.eziolin.zhiwei4idea.idea.service.ZhiweiViewerService;
 import com.intellij.openapi.actionSystem.AnAction;
 import com.intellij.openapi.actionSystem.AnActionEvent;
 import org.jetbrains.annotations.NotNull;

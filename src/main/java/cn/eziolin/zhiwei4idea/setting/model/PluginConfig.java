@@ -1,4 +1,4 @@
-package cn.eziolin.zhiwei4idea.model;
+package cn.eziolin.zhiwei4idea.setting.model;
 
 public class PluginConfig {
   private String myUsername;

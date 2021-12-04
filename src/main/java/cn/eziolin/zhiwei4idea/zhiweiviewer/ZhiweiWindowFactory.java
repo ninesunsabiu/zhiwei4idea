@@ -1,7 +1,6 @@
-package cn.eziolin.zhiwei4idea.idea;
+package cn.eziolin.zhiwei4idea.zhiweiviewer;
 
 import cn.eziolin.zhiwei4idea.api.ZhiweiApi;
-import cn.eziolin.zhiwei4idea.idea.service.ZhiweiViewerService;
 import com.intellij.openapi.project.Project;
 import com.intellij.openapi.wm.ToolWindow;
 import com.intellij.openapi.wm.ToolWindowFactory;

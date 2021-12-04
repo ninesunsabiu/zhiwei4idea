@@ -2,7 +2,7 @@ package cn.eziolin.zhiwei4idea.api;
 
 import cn.eziolin.zhiwei4idea.api.model.BaseResponse;
 import cn.eziolin.zhiwei4idea.api.model.ViewMeta;
-import cn.eziolin.zhiwei4idea.idea.service.ConfigSettingsState;
+import cn.eziolin.zhiwei4idea.setting.ConfigSettingsState;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intellij.openapi.application.ApplicationManager;
