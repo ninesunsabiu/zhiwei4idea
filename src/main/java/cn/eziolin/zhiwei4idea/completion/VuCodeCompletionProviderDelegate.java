@@ -1,31 +1,27 @@
 package cn.eziolin.zhiwei4idea.completion;
 
-import cn.eziolin.zhiwei4idea.api.ZhiweiApi;
 import cn.eziolin.zhiwei4idea.api.model.Card;
+import cn.eziolin.zhiwei4idea.ramda.RamdaUtil;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
-import com.intellij.notification.Notification;
 import com.intellij.notification.NotificationType;
-import com.intellij.notification.Notifications;
-import com.intellij.openapi.application.ex.ApplicationUtil;
-import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.util.TextRange;
 import io.vavr.Tuple;
+import io.vavr.collection.List;
 import io.vavr.control.Option;
-import io.vavr.control.Try;
 
 import java.util.function.BiConsumer;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class VuCodeCompletionProviderDelegate
     implements BiConsumer<CompletionParameters, CompletionResultSet> {
   private static final String prefix = "card::";
   private static final Pattern pattern = Pattern.compile(prefix + "([\\S]+)$");
 
-  public static Option<String> getBeforeInputString(CompletionParameters parameters) {
+  private static Option<String> getBeforeInputString(CompletionParameters parameters) {
     var position = parameters.getPosition();
     int offsetInFile = parameters.getOffset();
     var startAndEnd = position.getText().substring(0, offsetInFile);
@@ -36,7 +32,7 @@ public class VuCodeCompletionProviderDelegate
     return Option.none();
   }
 
-  private static Stream<LookupElementBuilder> getCards(String searchKeyword) {
+  private static List<LookupElementBuilder> getCards(String searchKeyword) {
     return searchCards(searchKeyword)
         .map(
             card -> {
@@ -56,28 +52,27 @@ public class VuCodeCompletionProviderDelegate
             });
   }
 
-  private static Stream<Card> searchCards(String keyword) {
-    return ZhiweiApi.searchCard(keyword)
+  private static List<Card> searchCards(String keyword) {
+    var zhiweiService = RamdaUtil.getZhiweiService.get();
+    var configRet = RamdaUtil.getConfigEnv.apply("tkb");
+
+    return configRet
         .flatMap(
-            (response) -> {
-              return Try.of(
-                      () -> {
-                        return ApplicationUtil.runWithCheckCanceled(
-                            response, ProgressManager.getInstance().getProgressIndicator());
-                      })
-                  .flatMapTry(res -> res.body().get())
-                  .map(it -> it.resultValue.caches.stream())
-                  .toValidation(err -> new ZhiweiApi.ZhiweiApiError(err.getMessage()));
+            config -> {
+              return zhiweiService.map(service -> Tuple.of(service, config._1));
+            })
+        .flatMap(
+            serviceAndDomain -> {
+              return serviceAndDomain
+                  ._1
+                  .findCardList(serviceAndDomain._2, keyword)
+                  .toValidation(Throwable::getMessage);
             })
         .peekError(
-            error -> {
-              Notifications.Bus.notify(
-                  new Notification(
-                      "Zhiwei Notification",
-                      "Search Card" + "\n" + error.getMessage(),
-                      NotificationType.ERROR));
+            errorMsg -> {
+              RamdaUtil.showMessage.apply("查询卡片错误", errorMsg, NotificationType.WARNING);
             })
-        .getOrElse(Stream.empty());
+        .fold(ignored -> List.empty(), Function.identity());
   }
 
   @Override

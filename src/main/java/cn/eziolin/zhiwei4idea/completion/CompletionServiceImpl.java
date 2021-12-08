@@ -1,37 +1,25 @@
-package cn.eziolin.zhiwei4idea.completion.service;
+package cn.eziolin.zhiwei4idea.completion;
 
-import cn.eziolin.zhiwei4idea.api.ZhiweiApi;
 import com.intellij.openapi.Disposable;
 import com.intellij.openapi.vcs.CheckinProjectPanel;
-import com.intellij.ui.AncestorListenerAdapter;
 import com.intellij.ui.EditorTextComponent;
+import io.vavr.control.Option;
 
-import javax.swing.event.AncestorEvent;
 import java.io.File;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Optional;
 
 public class CompletionServiceImpl implements CompletionService, Disposable {
-  private final AncestorListenerAdapter myWhenCheckinPanelShownChange =
-      new AncestorListenerAdapter() {
-        @Override
-        public void ancestorAdded(AncestorEvent event) {
-          ZhiweiApi.initSdk();
-        }
-      };
-
   private WeakReference<CheckinProjectPanel> myPanelRef = null;
 
-  private Optional<CheckinProjectPanel> getCheckinProjectPanel() {
-    return Optional.ofNullable(myPanelRef).map(Reference::get);
+  private Option<CheckinProjectPanel> getCheckinProjectPanel() {
+    return Option.of(myPanelRef).map(Reference::get);
   }
 
   @Override
   public void setCheckinProjectPanel(CheckinProjectPanel panel) {
-    panel.getPreferredFocusedComponent().addAncestorListener(myWhenCheckinPanelShownChange);
     myPanelRef = new WeakReference<>(panel);
   }
 
@@ -44,24 +32,18 @@ public class CompletionServiceImpl implements CompletionService, Disposable {
               return component instanceof EditorTextComponent
                   && ((EditorTextComponent) component).getComponent().isFocusOwner();
             })
-        .orElse(false);
+        .getOrElse(() -> false);
   }
 
   @Override
   public Collection<File> getAffectedFiles() {
     return getCheckinProjectPanel()
         .map(it -> isCommitUiActive() ? it.getFiles() : null)
-        .orElse(Collections.emptyList());
+        .getOrElse(Collections::emptyList);
   }
 
   @Override
   public void dispose() {
-    getCheckinProjectPanel()
-        .ifPresent(
-            it ->
-                it.getPreferredFocusedComponent()
-                    .removeAncestorListener(myWhenCheckinPanelShownChange));
-
     myPanelRef = null;
   }
 }

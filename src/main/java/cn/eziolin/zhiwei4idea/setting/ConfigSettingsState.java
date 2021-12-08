@@ -1,6 +1,7 @@
 package cn.eziolin.zhiwei4idea.setting;
 
 import cn.eziolin.zhiwei4idea.setting.model.PluginConfig;
+import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.intellij.openapi.application.ApplicationManager;
@@ -8,6 +9,8 @@ import com.intellij.openapi.components.PersistentStateComponent;
 import com.intellij.openapi.components.State;
 import com.intellij.openapi.components.Storage;
 import com.intellij.util.xmlb.XmlSerializerUtil;
+import io.vavr.collection.HashMap;
+import io.vavr.collection.Map;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import org.jetbrains.annotations.NotNull;
@@ -20,8 +23,7 @@ import java.io.File;
     storages = {@Storage("zhiwei_for_idea.xml")})
 public class ConfigSettingsState implements PersistentStateComponent<ConfigSettingsState> {
   private String myConfigFilePath;
-  private String myDomain;
-  private PluginConfig myPluginConfig;
+  private Map<String, PluginConfig> myPluginConfig;
 
   @Override
   public @Nullable ConfigSettingsState getState() {
@@ -41,24 +43,20 @@ public class ConfigSettingsState implements PersistentStateComponent<ConfigSetti
     setConfigPathAndTryLoadPersistent(configFilePath);
   }
 
-  public Try<PluginConfig> setConfigPathAndTryLoadPersistent(@NotNull String path) {
+  public Try<Map<String, PluginConfig>> setConfigPathAndTryLoadPersistent(@NotNull String path) {
     this.myConfigFilePath = path;
     return readConfigYamlToPluginConfig(path).peek(this::setPluginConfig);
   }
 
-  public @Nullable String getDomain() {
-    return myDomain;
-  }
-
-  public void setDomain(@NotNull String domain) {
-    this.myDomain = domain;
-  }
-
-  private void setPluginConfig(@NotNull PluginConfig pluginConfig) {
+  private void setPluginConfig(@NotNull Map<String, PluginConfig> pluginConfig) {
     this.myPluginConfig = pluginConfig;
   }
 
-  private Try<PluginConfig> readConfigYamlToPluginConfig(String configFilePath) {
+  public @Nullable Map<String, PluginConfig> getPluginConfig() {
+    return this.myPluginConfig;
+  }
+
+  private Try<Map<String, PluginConfig>> readConfigYamlToPluginConfig(String configFilePath) {
     return Option.of(configFilePath)
         .flatMap(
             s -> {
@@ -68,7 +66,17 @@ public class ConfigSettingsState implements PersistentStateComponent<ConfigSetti
             })
         .map(Try::success)
         .getOrElse(Try.failure(new Error("找不到配置文件: " + configFilePath)))
-        .mapTry(file -> new ObjectMapper(new YAMLFactory()).readValue(file, PluginConfig.class));
+        .mapTry(
+            file -> {
+              var objectMapper = new ObjectMapper(new YAMLFactory());
+              JavaType type =
+                  objectMapper
+                      .getTypeFactory()
+                      .constructParametricType(
+                          java.util.Map.class, String.class, PluginConfig.class);
+              java.util.Map<String, PluginConfig> t = objectMapper.readValue(file, type);
+              return HashMap.ofAll(t);
+            });
   }
 
   public static Option<ConfigSettingsState> getInstanceSafe() {
@@ -76,15 +84,9 @@ public class ConfigSettingsState implements PersistentStateComponent<ConfigSetti
         ApplicationManager.getApplication().getService(ConfigSettingsState.class).getState());
   }
 
-  public static Option<PluginConfig> getPluginConfigSafe() {
-    return getInstanceSafe().flatMap(state -> Option.of(state.myPluginConfig));
-  }
-
-  public static Option<String> getPersistentCookie() {
-    return getPluginConfigSafe().flatMap(config -> Option.of(config.getCookie()));
-  }
-
-  public static Option<String> getDomainSafe() {
-    return getInstanceSafe().flatMap(state -> Option.of(state.myDomain));
+  public static Option<PluginConfig> getPluginConfigSafe(@NotNull String env) {
+    return getInstanceSafe()
+        .flatMap(state -> Option.of(state.getPluginConfig()))
+        .flatMap(it -> it.get(env));
   }
 }

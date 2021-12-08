@@ -1,11 +1,11 @@
 package cn.eziolin.zhiwei4idea.completion;
 
-import cn.eziolin.zhiwei4idea.completion.service.CompletionService;
 import com.intellij.openapi.vcs.CheckinProjectPanel;
 import com.intellij.openapi.vcs.changes.CommitContext;
 import com.intellij.openapi.vcs.checkin.CheckinHandler;
 import com.intellij.openapi.vcs.checkin.VcsCheckinHandlerFactory;
 import git4idea.GitVcs;
+import io.vavr.control.Option;
 import org.jetbrains.annotations.NotNull;
 
 public class CompletionCheckinHandlerFactory extends VcsCheckinHandlerFactory {
@@ -18,9 +18,9 @@ public class CompletionCheckinHandlerFactory extends VcsCheckinHandlerFactory {
   @Override
   protected CheckinHandler createVcsHandler(
       @NotNull CheckinProjectPanel panel, @NotNull CommitContext commitContext) {
-    var project = panel.getProject();
     // hack the panel
-    project.getService(CompletionService.class).setCheckinProjectPanel(panel);
-    return new CheckinHandler() {};
+    Option.of(panel.getProject().getService(CompletionService.class))
+        .forEach(service -> service.setCheckinProjectPanel(panel));
+    return CheckinHandler.DUMMY;
   }
 }

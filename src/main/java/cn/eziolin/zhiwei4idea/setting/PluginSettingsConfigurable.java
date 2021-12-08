@@ -7,25 +7,19 @@ import com.intellij.openapi.options.Configurable;
 import com.intellij.openapi.options.UnnamedConfigurable;
 import com.intellij.ui.components.JBTextField;
 import com.intellij.util.ui.FormBuilder;
-import io.vavr.Tuple;
-import io.vavr.collection.List;
-import io.vavr.control.Option;
 import org.jetbrains.annotations.Nls;
 import org.jetbrains.annotations.Nullable;
 
 import javax.swing.*;
-import java.util.function.Consumer;
 
 class ConfigSettingsUiComponent implements UnnamedConfigurable {
   private final JPanel myMainPanel;
   private final JBTextField myConfigPathText = new JBTextField();
-  private final JBTextField myDomainText = new JBTextField();
 
   public ConfigSettingsUiComponent() {
     myMainPanel =
         FormBuilder.createFormBuilder()
             .addLabeledComponent(new JLabel("config path"), myConfigPathText, 1, false)
-            .addLabeledComponent(new JLabel("host url"), myDomainText, 1, false)
             .addComponentFillVertically(new JPanel(), 0)
             .getPanel();
   }
@@ -38,14 +32,6 @@ class ConfigSettingsUiComponent implements UnnamedConfigurable {
     myConfigPathText.setText(newText);
   }
 
-  public String getDomain() {
-    return myDomainText.getText();
-  }
-
-  public void setDomainText(String newDomain) {
-    myDomainText.setText(newDomain);
-  }
-
   @Override
   public @Nullable JComponent createComponent() {
     return myMainPanel;
@@ -56,9 +42,9 @@ class ConfigSettingsUiComponent implements UnnamedConfigurable {
     var sameAsPersistent =
         ConfigSettingsState.getInstanceSafe()
             .map(
-                state ->
-                    getConfigPath().equals(state.getConfigFilePath())
-                        && getDomain().equals(state.getDomain()))
+                state -> {
+                  return getConfigPath().equals(state.getConfigFilePath());
+                })
             .getOrElse(false);
     return !sameAsPersistent;
   }
@@ -82,7 +68,6 @@ class ConfigSettingsUiComponent implements UnnamedConfigurable {
                                       + "\n"
                                       + throwable.getMessage(),
                                   NotificationType.ERROR)));
-              state.setDomain(getDomain());
             });
   }
 
@@ -90,11 +75,9 @@ class ConfigSettingsUiComponent implements UnnamedConfigurable {
   public void reset() {
     ConfigSettingsState.getInstanceSafe()
         .forEach(
-            (it) ->
-                List.of(
-                        Tuple.of(it.getConfigFilePath(), (Consumer<String>) this::setConfigPath),
-                        Tuple.of(it.getDomain(), (Consumer<String>) this::setDomainText))
-                    .forEach((data) -> Option.of(data._1).forEach(data._2)));
+            (it) -> {
+              setConfigPath(it.getConfigFilePath());
+            });
   }
 }
 

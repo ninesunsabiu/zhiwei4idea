@@ -1,9 +1,9 @@
 package cn.eziolin.zhiwei4idea.setting.model;
 
 public class PluginConfig {
+  private String myDomain;
   private String myUsername;
   private String myPassword;
-  private String myCookie;
 
   public String getUsername() {
     return myUsername;
@@ -21,11 +21,11 @@ public class PluginConfig {
     this.myPassword = password;
   }
 
-  public String getCookie() {
-    return myCookie;
+  public String getDomain() {
+    return myDomain;
   }
 
-  public void setCookie(String cookie) {
-    this.myCookie = cookie;
+  public void setDomain(String domain) {
+    this.myDomain = domain;
   }
 }

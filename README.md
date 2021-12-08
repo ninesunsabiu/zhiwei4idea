@@ -17,10 +17,15 @@
 ```yaml
 # location at ~/.zhiwei4idea
 
-# username of zhiwei
-usename: abc@agilean.cn
-# password of zhiwei
-password: 123321
+tkb:
+  domain: https://tkb.agilean.cn
+  username: abc@agilean.cn
+  password: tset
+dev:
+  domain: http://test.agilean.cn
+  username: abc@agilean.cn
+  password: test
+
 ```
 
 二、进入插件配置 Preferences->Tools->Zhiwei4idea 填写对应的配置文件地址和知微域名

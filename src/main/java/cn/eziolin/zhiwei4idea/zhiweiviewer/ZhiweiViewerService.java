@@ -1,12 +1,13 @@
 package cn.eziolin.zhiwei4idea.zhiweiviewer;
 
+import io.vavr.control.Option;
+
 import javax.swing.*;
-import java.util.Optional;
 
 public interface ZhiweiViewerService {
   void setCookie(String cookieStr);
 
-  Optional<JComponent> getWebViewComponent();
+  Option<JComponent> getWebViewComponent();
 
   void reload();
 }

@@ -27,10 +27,15 @@
         <applicationService
                 serviceImplementation="cn.eziolin.zhiwei4idea.setting.ConfigSettingsState"
         />
+        <applicationService
+                id="cn.eziolin.zhiwei4idea.api.ZhiweiService"
+                serviceInterface="cn.eziolin.zhiwei4idea.api.ZhiweiService"
+                serviceImplementation="cn.eziolin.zhiwei4idea.api.ZhiweiServiceImpl"
+        />
         <projectService
-                id="cn.eziolin.zhiwei4idea.completion.service.CompletionService"
-                serviceInterface="cn.eziolin.zhiwei4idea.completion.service.CompletionService"
-                serviceImplementation="cn.eziolin.zhiwei4idea.completion.service.CompletionServiceImpl"
+                id="cn.eziolin.zhiwei4idea.completion.CompletionService"
+                serviceInterface="cn.eziolin.zhiwei4idea.completion.CompletionService"
+                serviceImplementation="cn.eziolin.zhiwei4idea.completion.CompletionServiceImpl"
         />
         <projectService
                 id="cn.eziolin.zhiwei4idea.zhiweiviewer.ZhiweiViewerService"
