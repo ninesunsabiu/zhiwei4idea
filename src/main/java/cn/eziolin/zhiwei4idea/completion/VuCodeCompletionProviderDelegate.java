@@ -1,15 +1,21 @@
 package cn.eziolin.zhiwei4idea.completion;
 
+import cn.eziolin.zhiwei4idea.api.ZhiweiService;
 import cn.eziolin.zhiwei4idea.api.model.Card;
 import cn.eziolin.zhiwei4idea.ramda.RamdaUtil;
 import com.intellij.codeInsight.completion.CompletionParameters;
 import com.intellij.codeInsight.completion.CompletionResultSet;
 import com.intellij.codeInsight.lookup.LookupElementBuilder;
 import com.intellij.notification.NotificationType;
+import com.intellij.openapi.application.ex.ApplicationUtil;
+import com.intellij.openapi.progress.ProgressManager;
 import com.intellij.openapi.util.TextRange;
+import io.vavr.Function2;
 import io.vavr.Tuple;
 import io.vavr.collection.List;
 import io.vavr.control.Option;
+import io.vavr.control.Try;
+import io.vavr.control.Validation;
 
 import java.util.function.BiConsumer;
 import java.util.function.Function;
@@ -26,10 +32,36 @@ public class VuCodeCompletionProviderDelegate
     int offsetInFile = parameters.getOffset();
     var startAndEnd = position.getText().substring(0, offsetInFile);
     var matcher = pattern.matcher(startAndEnd);
-    if (matcher.find()) {
-      return Option.of(matcher.group(1));
-    }
-    return Option.none();
+    return matcher.find() ? Option.some(matcher.group(1)) : Option.none();
+  }
+
+  private static List<Card> searchCards(String keyword) {
+    var zhiweiService = RamdaUtil.getZhiweiService.get();
+    var configRet = RamdaUtil.getConfigEnv.apply("tkb");
+    Function2<ZhiweiService, String, Validation<String, List<Card>>> findCardList =
+        (service, domain) -> {
+          return service.findCardList(domain, keyword).toValidation(Throwable::getMessage);
+        };
+
+    return zhiweiService
+        .combine(configRet)
+        .ap(
+            (service, config) -> {
+              return Try.of(
+                      () -> {
+                        var indicator = ProgressManager.getInstance().getProgressIndicator();
+                        return ApplicationUtil.runWithCheckCanceled(
+                            () -> Tuple.of(service, config._1).apply(findCardList), indicator);
+                      })
+                  .getOrElseGet(ignored -> Validation.valid(List.<Card>empty()));
+            })
+        .mapError(RamdaUtil.joinStrWith.apply("\t"))
+        .flatMap(it -> it)
+        .peekError(
+            errorMsg -> {
+              RamdaUtil.showMessage.apply("查询卡片错误", errorMsg, NotificationType.WARNING);
+            })
+        .fold(ignored -> List.empty(), Function.identity());
   }
 
   private static List<LookupElementBuilder> getCards(String searchKeyword) {
@@ -52,33 +84,23 @@ public class VuCodeCompletionProviderDelegate
             });
   }
 
-  private static List<Card> searchCards(String keyword) {
-    var zhiweiService = RamdaUtil.getZhiweiService.get();
-    var configRet = RamdaUtil.getConfigEnv.apply("tkb");
-
-    return configRet
-        .flatMap(
-            config -> {
-              return zhiweiService.map(service -> Tuple.of(service, config._1));
-            })
-        .flatMap(
-            serviceAndDomain -> {
-              return serviceAndDomain
-                  ._1
-                  .findCardList(serviceAndDomain._2, keyword)
-                  .toValidation(Throwable::getMessage);
-            })
-        .peekError(
-            errorMsg -> {
-              RamdaUtil.showMessage.apply("查询卡片错误", errorMsg, NotificationType.WARNING);
-            })
-        .fold(ignored -> List.empty(), Function.identity());
-  }
-
   @Override
   public void accept(CompletionParameters parameters, CompletionResultSet resultSet) {
     getBeforeInputString(parameters)
         .map(keyword -> Tuple.of(resultSet.withPrefixMatcher(keyword), keyword))
-        .forEach(tuple -> tuple._1.addAllElements(getCards(tuple._2).collect(Collectors.toList())));
+        .forEach(
+            tuple -> {
+              getCards(tuple._2)
+                  .transform(
+                      (list) -> {
+                        return list.nonEmpty()
+                            ? Option.some(list)
+                            : Option.<List<LookupElementBuilder>>none();
+                      })
+                  .forEach(
+                      lookupList -> {
+                        tuple._1.addAllElements(lookupList.collect(Collectors.toList()));
+                      });
+            });
   }
 }

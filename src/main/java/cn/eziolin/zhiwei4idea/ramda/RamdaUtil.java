@@ -10,6 +10,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import io.vavr.Function2;
 import io.vavr.Function3;
 import io.vavr.Tuple3;
+import io.vavr.collection.Seq;
 import io.vavr.control.Option;
 import io.vavr.control.Validation;
 import org.jetbrains.annotations.NotNull;
@@ -25,6 +26,9 @@ public class RamdaUtil {
 
   public static Function<String, Function<String, String>> prependStr =
       left -> right -> left + right;
+
+  public static Function<String, Function<Seq<String>, String>> joinStrWith =
+      character -> seq -> seq.mkString(character);
 
   public static Function<String, Supplier<Throwable>> throwMsg = str -> () -> new Throwable(str);
 
