@@ -10,6 +10,7 @@ import com.intellij.openapi.application.ApplicationManager;
 import io.vavr.Function2;
 import io.vavr.Function3;
 import io.vavr.Tuple3;
+import io.vavr.collection.Map;
 import io.vavr.collection.Seq;
 import io.vavr.control.Option;
 import io.vavr.control.Validation;
@@ -72,6 +73,13 @@ public class RamdaUtil {
       () -> {
         var it = ApplicationManager.getApplication().getService(ZhiweiService.class);
         return Option.of(it).toValidation(() -> "奇怪的没有得到 Service");
+      };
+
+  public static Supplier<Option<Map<String, PluginConfig>>> getAllPluginConfig =
+      () -> {
+        return ConfigSettingsState.getInstanceSafe()
+            .map(ConfigSettingsState::getPluginConfig)
+            .flatMap(Option::of);
       };
 
   public static Function<String, Validation<String, Tuple3<String, String, String>>> getConfigEnv =

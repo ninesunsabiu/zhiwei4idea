@@ -69,5 +69,11 @@
                 class="cn.eziolin.zhiwei4idea.zhiweiviewer.ReloadZhiweiViewerAction"
                 text="Reload Zhiwei Viewer"
         />
+        <action id="cn.eziolin.zhiwei4idea.searchId.SearchEverythingById"
+                class="cn.eziolin.zhiwei4idea.searchId.SearchEverythingById"
+                text="Search Id in Zhiwei"
+                description="Search id for everything in zhiwei">
+            <keyboard-shortcut keymap="$default" first-keystroke="shift ctrl I"/>
+        </action>
     </actions>
 </idea-plugin>

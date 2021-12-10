@@ -1,6 +1,7 @@
 package cn.eziolin.zhiwei4idea.api;
 
 import cn.eziolin.zhiwei4idea.api.model.Card;
+import cn.eziolin.zhiwei4idea.setting.model.PluginConfig;
 import io.vavr.collection.List;
 import io.vavr.control.Try;
 import org.jetbrains.annotations.NotNull;
@@ -27,4 +28,13 @@ public interface ZhiweiService {
    */
   @NotNull
   Try<List<Card>> findCardList(@NotNull String domain, @NotNull String keyword);
+
+  /**
+   * 通过 id 查看 id 背后所代表的实体
+   *
+   * @param id 实体标记
+   * @return 实体记录
+   */
+  @NotNull
+  Try<String> searchIdForEverything(@NotNull PluginConfig config, @NotNull String id);
 }

@@ -3,6 +3,8 @@ package cn.eziolin.zhiwei4idea.api;
 import cn.eziolin.zhiwei4idea.api.model.BaseResponse;
 import cn.eziolin.zhiwei4idea.api.model.Card;
 import cn.eziolin.zhiwei4idea.api.model.ViewMeta;
+import cn.eziolin.zhiwei4idea.ramda.RamdaUtil;
+import cn.eziolin.zhiwei4idea.setting.model.PluginConfig;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intellij.util.io.HttpRequests;
@@ -35,6 +37,10 @@ public class ZhiweiServiceImpl implements ZhiweiService {
           .setHeader("Content-Type", HttpRequests.JSON_CONTENT_TYPE)
           .setHeader("Accept", HttpRequests.JSON_CONTENT_TYPE);
     };
+  }
+
+  private Function<HttpRequest.Builder, HttpRequest.Builder> setCookieInBuilder(String cookie) {
+    return builder -> Tuple.of("Cookie", cookie).apply(builder::setHeader);
   }
 
   @Override
@@ -168,5 +174,31 @@ public class ZhiweiServiceImpl implements ZhiweiService {
             })
         .recoverWith(
             ((Function<Throwable, ZhiweiApiError>) ZhiweiApiError::of).andThen(Try::failure));
+  }
+
+  @Override
+  public @NotNull Try<String> searchIdForEverything(
+      @NotNull PluginConfig config, @NotNull String id) {
+    var api = "/api/v1/debug/watch/" + id;
+    var configWithValidation = RamdaUtil.pluginConfigValidator.apply(config);
+    var tryGetConfig = configWithValidation.toTry();
+    return tryGetConfig
+        .flatMapTry(
+            configTuple -> {
+              return getCookie(configTuple._1).map(Tuple.of(configTuple._1)::append);
+            })
+        .map(
+            domainAndCookie -> {
+              var domain = domainAndCookie._1;
+              var cookie = domainAndCookie._2;
+              return Tuple.of(getNewHttpRequestBuilder().get().uri(URI.create(domain + api)).GET())
+                  .apply(setCookieInBuilder(cookie))
+                  .build();
+            })
+        .mapTry(
+            request -> {
+              HttpClient client = HttpClient.newHttpClient();
+              return client.send(request, HttpResponse.BodyHandlers.ofString()).body();
+            });
   }
 }
