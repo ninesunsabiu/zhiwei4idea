@@ -15,10 +15,10 @@ public interface ZhiweiService {
    * @return 登录成功后返回 session cookie
    */
   @NotNull
-  Try<String> login(@NotNull String domain, @NotNull String userName, @NotNull String password);
+  Try<String> login(String domain, String userName, String password);
 
   @NotNull
-  Try<String> getCookie(@NotNull String domain);
+  Try<String> getCookie(String domain);
 
   /**
    * 通过关键字搜索卡片列表
@@ -27,7 +27,7 @@ public interface ZhiweiService {
    * @return 卡片列表数据
    */
   @NotNull
-  Try<List<Card>> findCardList(@NotNull String domain, @NotNull String keyword);
+  Try<List<Card>> findCardList(String domain, String keyword);
 
   /**
    * 通过 id 查看 id 背后所代表的实体
@@ -36,5 +36,5 @@ public interface ZhiweiService {
    * @return 实体记录
    */
   @NotNull
-  Try<String> searchIdForEverything(@NotNull PluginConfig config, @NotNull String id);
+  Try<String> searchIdForEverything(PluginConfig config, String id);
 }
