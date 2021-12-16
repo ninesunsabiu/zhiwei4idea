@@ -1,5 +1,6 @@
 package cn.eziolin.zhiwei4idea;
 
+import cn.eziolin.zhiwei4idea.gitpush.IssueCardCloser;
 import cn.eziolin.zhiwei4idea.ramda.RamdaUtil;
 import cn.eziolin.zhiwei4idea.setting.ConfigSettingsState;
 import cn.eziolin.zhiwei4idea.setting.model.PluginConfig;
@@ -22,6 +23,9 @@ import java.util.function.Supplier;
 public class Starter implements ProjectManagerListener {
   @Override
   public void projectOpened(@NotNull Project project) {
+    // start git push listener
+    project.getService(IssueCardCloser.class).activate();
+
     new Task.Backgroundable(project, "Login zhiwei", true) {
 
       @Override

@@ -1,8 +1,6 @@
 package cn.eziolin.zhiwei4idea.api;
 
-import cn.eziolin.zhiwei4idea.api.model.BaseResponse;
-import cn.eziolin.zhiwei4idea.api.model.Card;
-import cn.eziolin.zhiwei4idea.api.model.ViewMeta;
+import cn.eziolin.zhiwei4idea.api.model.*;
 import cn.eziolin.zhiwei4idea.ramda.RamdaUtil;
 import cn.eziolin.zhiwei4idea.setting.model.PluginConfig;
 import com.fasterxml.jackson.databind.JavaType;
@@ -12,9 +10,8 @@ import io.vavr.Function2;
 import io.vavr.Function3;
 import io.vavr.Tuple;
 import io.vavr.Tuple3;
-import io.vavr.collection.HashMap;
-import io.vavr.collection.List;
-import io.vavr.collection.Seq;
+import io.vavr.collection.*;
+import io.vavr.control.Either;
 import io.vavr.control.Option;
 import io.vavr.control.Try;
 import io.vavr.control.Validation;
@@ -229,23 +226,28 @@ public class ZhiweiServiceImpl implements ZhiweiService {
     return inputValidator.ap(findCardListProcess).transform(this::transformVToT);
   }
 
+  private final Function2<Tuple3<String, String, String>, String, Try<HttpRequest.Builder>>
+      getRequestBuilder =
+          (config, api) -> {
+            var domainTuple = Tuple.of(config._1);
+            var tryCookie = domainTuple.apply(this::getCookie).map(domainTuple::append);
+            return tryCookie.map(
+                domainAndCookie -> {
+                  var domain = domainAndCookie._1;
+                  var cookie = domainAndCookie._2;
+                  return Tuple.of(getNewHttpRequestBuilder().get().uri(URI.create(domain + api)))
+                      .apply(setCookieInBuilder(cookie));
+                });
+          };
+
   private final Function2<Tuple3<String, String, String>, String, Try<String>>
       searchIdForEverythingProcess =
           (config, id) -> {
             var api = "/api/v1/debug/watch/" + id;
-            var domainTuple = Tuple.of(config._1);
-            var tryCookie = domainTuple.apply(this::getCookie).map(domainTuple::append);
+            var tryGetBuilder = getRequestBuilder.apply(config, api);
 
-            return tryCookie
-                .map(
-                    domainAndCookie -> {
-                      var domain = domainAndCookie._1;
-                      var cookie = domainAndCookie._2;
-                      return Tuple.of(
-                              getNewHttpRequestBuilder().get().uri(URI.create(domain + api)).GET())
-                          .apply(setCookieInBuilder(cookie))
-                          .build();
-                    })
+            return tryGetBuilder
+                .map(builder -> builder.GET().build())
                 .mapTry(
                     request -> {
                       HttpClient client = HttpClient.newHttpClient();
@@ -259,6 +261,134 @@ public class ZhiweiServiceImpl implements ZhiweiService {
     return configWithValidation
         .combine(notNullStringValidator.apply("ID", id))
         .ap(searchIdForEverythingProcess)
+        .transform(this::transformVToT);
+  }
+
+  private final Function2<Tuple3<String, String, String>, Set<String>, Try<Set<OpenAPICard>>>
+      searchCardByCodeProcess =
+          (config, codeList) -> {
+            var api = "/openapi/api/v1/value-units/filter?by=code";
+            var tryGetRequestBuilder = getRequestBuilder.apply(config, api);
+            return tryGetRequestBuilder
+                .flatMap(
+                    builder -> {
+                      var payload =
+                          Try.of(
+                              () -> {
+                                var data =
+                                    Map.ofEntries(
+                                        Map.entry("codes", codeList.toJavaArray(String[]::new)),
+                                        Map.entry("orgId", "771ac1a5-fca5-4af2-b744-27b16e989b18"));
+                                return new ObjectMapper().writeValueAsString(data);
+                              });
+                      return payload.map(
+                          payloadStr -> {
+                            return builder
+                                .POST(HttpRequest.BodyPublishers.ofString(payloadStr))
+                                .build();
+                          });
+                    })
+                .flatMapTry(
+                    request -> {
+                      HttpClient client = HttpClient.newHttpClient();
+                      return client
+                          .sendAsync(request, asJSON(OpenAPICard[].class))
+                          .thenApply(it -> it.body().get())
+                          .thenApply(
+                              data -> {
+                                return data.map(it -> it.resultValue)
+                                    .map(Arrays::stream)
+                                    .map(HashSet::ofAll);
+                              })
+                          .get();
+                    });
+          };
+
+  @Override
+  public @NotNull Try<Set<OpenAPICard>> searchCardByCode(PluginConfig config, Set<String> codeSet) {
+    var codeSetValidation =
+        Option.of(codeSet).filter(Traversable::nonEmpty).toValidation(() -> "code 集合不能为空");
+
+    return RamdaUtil.pluginConfigValidator
+        .apply(config)
+        .combine(codeSetValidation)
+        .ap(searchCardByCodeProcess)
+        .transform(this::transformVToT);
+  }
+
+  private final Function3<
+          Tuple3<String, String, String>, Set<String>, Object, Try<Set<Either<String, String>>>>
+      batchUpdateFieldsProcess =
+          (config, cardIdSet, field) -> {
+            var api = "/api/v2/vu/edit/batch";
+            var tryBuilder = getRequestBuilder.apply(config, api);
+            return tryBuilder
+                .flatMap(
+                    builder -> {
+                      var tryPayload =
+                          Try.of(
+                              () -> {
+                                return new ObjectMapper()
+                                    .writeValueAsString(
+                                        java.util.Map.ofEntries(
+                                            Map.entry("tag", "edit"),
+                                            Map.entry("override", true),
+                                            Map.entry(
+                                                "vuIds", cardIdSet.toJavaArray(String[]::new)),
+                                            Map.entry("field", field)));
+                              });
+                      return tryPayload
+                          .map(HttpRequest.BodyPublishers::ofString)
+                          .map(builder::POST)
+                          .map(
+                              it -> {
+                                return it.setHeader(
+                                    "org-identity", "771ac1a5-fca5-4af2-b744-27b16e989b18");
+                              })
+                          .map(HttpRequest.Builder::build);
+                    })
+                .flatMapTry(
+                    request -> {
+                      return HttpClient.newHttpClient()
+                          .sendAsync(request, asJSON(BatchEditResult.class))
+                          .thenApply(HttpResponse::body)
+                          .thenApply(
+                              it -> {
+                                return it.get()
+                                    .map(
+                                        response -> {
+                                          return response.result != 0
+                                              ? cardIdSet.map(Either::<String, String>left)
+                                              : HashSet.ofAll(response.resultValue.successIds)
+                                                  .transform(
+                                                      ids -> {
+                                                        return ids.map(
+                                                                Either::<String, String>right)
+                                                            .addAll(
+                                                                cardIdSet
+                                                                    .filterNot(ids::contains)
+                                                                    .map(
+                                                                        Either
+                                                                            ::<String,
+                                                                                String>left));
+                                                      });
+                                        });
+                              })
+                          .get();
+                    });
+          };
+
+  @Override
+  public @NotNull Try<Set<Either<String, String>>> batchUpdateFields(
+      PluginConfig config, Set<String> cardIdSet, Object field) {
+    var idSetValidator =
+        Option.of(cardIdSet).filter(Traversable::nonEmpty).toValidation(() -> "卡片集合不能为空");
+
+    return RamdaUtil.pluginConfigValidator
+        .apply(config)
+        .combine(idSetValidator)
+        .combine(Option.of(field).toValidation(() -> "修改属性不能为空指针"))
+        .ap(batchUpdateFieldsProcess)
         .transform(this::transformVToT);
   }
 }

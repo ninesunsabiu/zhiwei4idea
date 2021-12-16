@@ -1,8 +1,11 @@
 package cn.eziolin.zhiwei4idea.api;
 
 import cn.eziolin.zhiwei4idea.api.model.Card;
+import cn.eziolin.zhiwei4idea.api.model.OpenAPICard;
 import cn.eziolin.zhiwei4idea.setting.model.PluginConfig;
 import io.vavr.collection.List;
+import io.vavr.collection.Set;
+import io.vavr.control.Either;
 import io.vavr.control.Try;
 import org.jetbrains.annotations.NotNull;
 
@@ -37,4 +40,13 @@ public interface ZhiweiService {
    */
   @NotNull
   Try<String> searchIdForEverything(PluginConfig config, String id);
+
+  /** 通过卡片的 code 搜索卡片 */
+  @NotNull
+  Try<Set<OpenAPICard>> searchCardByCode(PluginConfig config, Set<String> codeSet);
+
+  /** 根据卡片 ID 集合 批量移动到解决验证状态 */
+  @NotNull
+  Try<Set<Either<String, String>>> batchUpdateFields(
+      PluginConfig config, Set<String> cardIdSet, Object field);
 }
