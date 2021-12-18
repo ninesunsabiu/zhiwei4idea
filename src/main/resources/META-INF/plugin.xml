@@ -50,7 +50,7 @@
         <completion.contributor
                 language="TEXT"
                 order="first, before commitCompletion"
-                implementationClass="cn.eziolin.zhiwei4idea.completion.VuCodeCompletionContributor"
+                implementationClass="cn.eziolin.zhiwei4idea.searchCode.VuCodeCompletionContributor"
         />
         <vcsCheckinHandlerFactory
                 implementation="cn.eziolin.zhiwei4idea.completion.CompletionCheckinHandlerFactory"

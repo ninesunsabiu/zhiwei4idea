@@ -1,4 +1,4 @@
-package cn.eziolin.zhiwei4idea.completion;
+package cn.eziolin.zhiwei4idea.searchCode;
 
 import com.intellij.codeInsight.completion.CompletionContributor;
 import com.intellij.codeInsight.completion.CompletionType;
