@@ -382,7 +382,7 @@ public class ZhiweiServiceImpl implements ZhiweiService {
   public @NotNull Try<Set<Either<String, String>>> batchUpdateFields(
       PluginConfig config, Set<String> cardIdSet, Object field) {
     var idSetValidator =
-        Option.of(cardIdSet).filter(Traversable::nonEmpty).toValidation(() -> "卡片集合不能为空");
+        Option.of(cardIdSet).filter(Traversable::nonEmpty).toValidation(() -> "修改属性的卡片集合为空");
 
     return RamdaUtil.pluginConfigValidator
         .apply(config)

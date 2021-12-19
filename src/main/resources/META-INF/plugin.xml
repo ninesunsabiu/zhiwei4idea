@@ -52,6 +52,11 @@
                 order="first, before commitCompletion"
                 implementationClass="cn.eziolin.zhiwei4idea.searchCode.VuCodeCompletionContributor"
         />
+        <completion.contributor
+                language="TEXT"
+                order="first, before commitCompletion"
+                implementationClass="cn.eziolin.zhiwei4idea.gitpush.CloseDirectiveCompletionContributor"
+        />
         <vcsCheckinHandlerFactory
                 implementation="cn.eziolin.zhiwei4idea.completion.CompletionCheckinHandlerFactory"
         />

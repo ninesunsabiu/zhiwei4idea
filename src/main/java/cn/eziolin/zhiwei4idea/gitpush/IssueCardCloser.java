@@ -204,7 +204,7 @@ public final class IssueCardCloser
     var codeGroupKey = "code";
 
     var keywordsRegExp =
-        "((close[sd]?)|(fix(es|ed)?)|(resolve[sd]?))\\s#(?<" + codeGroupKey + ">\\d+)";
+        "@ag:((close[sd]?)|(fix(es|ed)?)|(resolve[sd]?))\\s#(?<" + codeGroupKey + ">\\d+)";
     var pattern = Pattern.compile(keywordsRegExp, Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
     list.map(VcsCommitMetadataImpl::getFullMessage)
@@ -284,7 +284,7 @@ public final class IssueCardCloser
                                                 .andThen(ignored -> RamdaUtil.ignore.get())
                                                 .apply(
                                                     "Zhiwei",
-                                                    "卡片移动解决方案失败: \n" + error + "\n",
+                                                    "卡片移动失败: \n" + error + "\n",
                                                     NotificationType.INFORMATION);
                                           },
                                           successSet -> {
